@@ -1,28 +1,25 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Lock,
-  User,
-  Phone,
   Eye,
   EyeOff,
-  Shield,
-  Check,
   ArrowRight,
   Loader2,
+  User,
+  Phone,
+  Shield,
+  Check,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 type AuthMode = "login" | "signup";
-type SignupStep = 1 | 2 | 3;
-type ForgotStep = 0 | 1 | 2 | 3;
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -34,25 +31,11 @@ export default function Auth() {
     verifyPhoneOtp,
   } = useAuth();
 
-  /* -------------------------------- */
-  /* Authentication State             */
-  /* -------------------------------- */
-
   const [mode, setMode] =
     useState<AuthMode>("login");
 
-  const [signupStep, setSignupStep] =
-    useState<SignupStep>(1);
-
-  const [forgotStep, setForgotStep] =
-    useState<ForgotStep>(0);
-
   const [loading, setLoading] =
     useState(false);
-
-  /* -------------------------------- */
-  /* Form Data                        */
-  /* -------------------------------- */
 
   const [email, setEmail] =
     useState("");
@@ -60,11 +43,13 @@ export default function Auth() {
   const [password, setPassword] =
     useState("");
 
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
-
   const [fullName, setFullName] =
-    useState("");
+  useState("");
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [phone, setPhone] =
     useState("");
@@ -72,432 +57,183 @@ export default function Auth() {
   const [otp, setOtp] =
     useState("");
 
-  const [emailOtp, setEmailOtp] =
-    useState(["", "", "", "", "", ""]);
-
   const [otpSent, setOtpSent] =
     useState(false);
 
-  const [emailVerified, setEmailVerified] =
-    useState(false);
-
-  const [sellerAccount, setSellerAccount] =
-    useState(false);
-
-  /* -------------------------------- */
-  /* Password                         */
-  /* -------------------------------- */
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [
-    showConfirmPassword,
-    setShowConfirmPassword,
-  ] = useState(false);
-
-  const passwordStrength = () => {
-    let score = 0;
-
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password))
-      score++;
-
-    return score;
-  };
-
-  const otpCode = emailOtp.join("");
-    /* -------------------------------- */
-  /* Email OTP                        */
-  /* -------------------------------- */
-
-  const sendEmailOtp = async () => {
-    if (!email.trim()) {
-      toast.error("Please enter your email");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const response = await fetch(
-        "https://vurshcart.onrender.com/send-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        setOtpSent(true);
-        toast.success("OTP sent successfully");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Server Error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* -------------------------------- */
-  /* Verify Email OTP                 */
-  /* -------------------------------- */
-
-  const verifyEmailOtp = async () => {
-    try {
-      setLoading(true);
-
-      const response = await fetch(
-        "https://vurshcart.onrender.com/verify-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            otp: otpCode,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        setEmailVerified(true);
-        setSignupStep(2);
-
-        toast.success("Email Verified");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Verification Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* -------------------------------- */
-  /* Login                            */
-  /* -------------------------------- */
-
   const handleLogin = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const response = await fetch(
-        "https://vurshcart.onrender.com/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(data.user)
-        );
-
-        toast.success("Welcome Back");
-
-        navigate("/");
-      } else {
-        toast.error(data.message);
+    const response = await fetch(
+      "https://vurshcart.onrender.com/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Login Failed");
-    } finally {
-      setLoading(false);
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Welcome Back");
+      navigate("/");
+    } else {
+      toast.error(data.message);
     }
-  };
-    /* -------------------------------- */
-  /* Register                         */
-  /* -------------------------------- */
+  } catch {
+    toast.error("Login Failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleRegister = async () => {
-    if (!emailVerified) {
-      toast.error("Verify your email first");
-      return;
-    }
+// 👇 ADD THIS WHOLE FUNCTION HERE
+const handlePhoneLogin = async () => {
+  toast.success("Phone Login Coming Soon");
+};
 
-    if (!fullName.trim()) {
-      toast.error("Enter your full name");
-      return;
-    }
+return (
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
 
-    try {
-      setLoading(true);
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-8">
 
-      const response = await fetch(
-        "https://vurshcart.onrender.com/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            full_name: fullName,
-            email,
-            password,
-            role: sellerAccount
-              ? "seller"
-              : "user",
-          }),
-        }
-      );
+      <div className="w-full max-w-7xl h-[820px] rounded-[36px] overflow-hidden bg-white shadow-2xl flex">
 
-      const data = await response.json();
+        {/* LEFT PANEL */}
 
-      if (data.success) {
-        toast.success(
-          "Account created successfully"
-        );
+        <div className="relative w-[42%] bg-black text-white overflow-hidden">
 
-        setMode("login");
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-900 to-black" />
 
-        setSignupStep(1);
+          {/* Lamp */}
 
-        setPassword("");
+          <div className="absolute top-0 left-1/2 -translate-x-1/2">
 
-        setConfirmPassword("");
+            <div className="h-20 w-[2px] bg-neutral-600" />
 
-        setFullName("");
-
-        setOtpSent(false);
-
-        setEmailVerified(false);
-
-        setEmailOtp([
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-        ]);
-      } else {
-        toast.error(data.message);
-      }
-    } catch (err) {
-      console.error(err);
-
-      toast.error("Registration Failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* -------------------------------- */
-  /* Phone Login                      */
-  /* -------------------------------- */
-
-  const handlePhoneLogin = async () => {
-    try {
-      setLoading(true);
-
-      if (!otpSent) {
-        await signInWithPhone(phone);
-
-        setOtpSent(true);
-
-        toast.success("OTP Sent");
-      } else {
-        await verifyPhoneOtp(
-          phone,
-          otp
-        );
-
-        toast.success(
-          "Login Successful"
-        );
-
-        navigate("/");
-      }
-    } catch (err: any) {
-      toast.error(
-        err.message ||
-          "Phone Login Failed"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* -------------------------------- */
-  /* Forgot Password                  */
-  /* -------------------------------- */
-
-  const handleForgotPassword =
-    async () => {
-      try {
-        setLoading(true);
-
-        if (forgotStep === 1) {
-          await fetch(
-            "https://vurshcart.onrender.com/send-otp",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-              body: JSON.stringify({
-                email,
-              }),
-            }
-          );
-
-          toast.success(
-            "OTP Sent"
-          );
-
-          setForgotStep(2);
-        } else if (
-          forgotStep === 2
-        ) {
-          const response =
-            await fetch(
-              "https://vurshcart.onrender.com/verify-otp",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type":
-                    "application/json",
-                },
-                body: JSON.stringify({
-                  email,
-                  otp: otpCode,
-                }),
-              }
-            );
-
-          const data =
-            await response.json();
-
-          if (data.success) {
-            toast.success(
-              "OTP Verified"
-            );
-
-            setForgotStep(3);
-          } else {
-            toast.error(
-              "Invalid OTP"
-            );
-          }
-        } else {
-          toast.success(
-            "Password Reset Successful"
-          );
-
-          setForgotStep(0);
-        }
-      } catch (err) {
-        console.error(err);
-
-        toast.error(
-          "Something went wrong"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-  /* -------------------------------- */
-  /* OAuth Login                      */
-  /* -------------------------------- */
-
-  const handleOAuth = async (
-    provider: () => Promise<void>
-  ) => {
-    try {
-      setLoading(true);
-
-      await provider();
-    } catch (err: any) {
-      toast.error(
-        err.message ||
-          "Authentication Failed"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* -------------------------------- */
-  /* UI                              */
-  /* -------------------------------- */
-
-  return (
-        <div className="min-h-screen bg-[#f8f9fb]">
-
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6 py-12">
-
-        <div className="w-full max-w-[560px] rounded-[28px] border border-neutral-200 bg-white shadow-[0_25px_80px_rgba(0,0,0,0.08)]">
-
-          {/* Logo */}
-
-          <div className="flex flex-col items-center px-10 pt-12">
-
-            <Logo />
-
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-neutral-900">
-
-              Welcome to VrushKart
-
-            </h1>
-
-            <p className="mt-3 text-center text-neutral-500">
-
-              India's Premium AI Marketplace
-
-            </p>
+            <div className="h-20 w-32 rounded-b-full bg-neutral-900 border border-neutral-700 shadow-2xl" />
 
           </div>
 
-          {/* Login Signup Toggle */}
+          {/* Brand */}
 
-          <div className="mt-10 px-10">
+          <div className="relative z-10 flex h-full flex-col items-center justify-center px-12 text-center">
+                        {/* VK Logo */}
 
-            <div className="grid grid-cols-2 rounded-xl bg-neutral-100 p-1">
+            <div className="select-none">
+
+              <h1
+                className="text-[92px] font-black tracking-[-8px] leading-none"
+                style={{
+                  fontFamily:
+                    "Georgia, serif",
+                }}
+              >
+                VK
+              </h1>
+
+              <p className="mt-2 text-[34px] font-light tracking-[12px] uppercase">
+
+                VRUSHKART
+
+              </p>
+
+            </div>
+
+            <div className="mt-8 h-px w-52 bg-neutral-700 relative">
+
+              <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+
+            </div>
+
+            <h2 className="mt-10 text-4xl font-bold leading-tight">
+
+              India's Premium
+
+              <br />
+
+              AI Marketplace
+
+            </h2>
+
+            <p className="mt-6 max-w-sm text-lg leading-8 text-neutral-400">
+
+              Shop smarter, sell faster and
+              experience the next generation
+              marketplace powered by AI.
+
+            </p>
+
+            <div className="mt-14 flex items-center gap-3 rounded-full border border-neutral-700 px-6 py-4">
+
+              <Shield className="h-6 w-6" />
+
+              <div className="text-left">
+
+                <p className="font-semibold">
+
+                  Trusted Platform
+
+                </p>
+
+                <p className="text-sm text-neutral-400">
+
+                  Secure • Reliable • Fast
+
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Curved Divider */}
+
+          <div className="absolute right-[-170px] top-0 h-full w-[340px] rounded-full bg-white" />
+
+        </div>
+
+        {/* RIGHT PANEL */}
+
+        <div className="relative flex-1 bg-white px-20 py-16">
+
+          <div className="mx-auto max-w-md">
+
+            <div className="mb-12 text-center">
+
+              <h2 className="text-5xl font-bold tracking-tight">
+
+                Welcome Back
+
+              </h2>
+
+              <p className="mt-4 text-lg text-neutral-500">
+
+                Login to your account
+
+              </p>
+
+            </div>
+
+            {/* Tabs */}
+
+            <div className="mb-10 flex rounded-xl bg-neutral-100 p-1">
 
               <button
-                onClick={() => {
-                  setMode("login");
-                  setForgotStep(0);
-                }}
-                className={`h-12 rounded-lg text-sm font-semibold transition-all ${
+                onClick={() =>
+                  setMode("login")
+                }
+                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
                   mode === "login"
-                    ? "bg-black text-white shadow-lg"
+                    ? "bg-black text-white"
                     : "text-neutral-600"
                 }`}
               >
@@ -505,14 +241,12 @@ export default function Auth() {
               </button>
 
               <button
-                onClick={() => {
-                  setMode("signup");
-                  setSignupStep(1);
-                  setForgotStep(0);
-                }}
-                className={`h-12 rounded-lg text-sm font-semibold transition-all ${
+                onClick={() =>
+                  setMode("signup")
+                }
+                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
                   mode === "signup"
-                    ? "bg-black text-white shadow-lg"
+                    ? "bg-black text-white"
                     : "text-neutral-600"
                 }`}
               >
@@ -520,993 +254,497 @@ export default function Auth() {
               </button>
 
             </div>
+                        {/* Login */}
 
-          </div>
+            {mode === "login" && (
 
-          {/* Signup Progress */}
+              <>
 
-          {mode === "signup" && (
+                {/* Email */}
 
-            <div className="mt-10 flex items-center justify-center">
+                <div className="mb-6">
 
-              {[1, 2, 3].map((item) => (
+                  <Label className="mb-2 block font-medium">
 
-                <div
-                  key={item}
-                  className="flex items-center"
-                >
+                    Email Address
 
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-all ${
-                      signupStep >= item
-                        ? "bg-black text-white"
-                        : "border border-neutral-300 bg-white text-neutral-500"
-                    }`}
-                  >
+                  </Label>
 
-                    {signupStep > item ? (
-                      <Check size={18} />
-                    ) : (
-                      item
-                    )}
+                  <div className="relative">
+
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) =>
+                        setEmail(e.target.value)
+                      }
+                      placeholder="Enter your email"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-base"
+                    />
 
                   </div>
 
-                  {item !== 3 && (
+                </div>
 
-                    <div
-                      className={`mx-3 h-[2px] w-12 ${
-                        signupStep > item
-                          ? "bg-black"
-                          : "bg-neutral-300"
-                      }`}
+                {/* Password */}
+
+                <div>
+
+                  <div className="mb-2 flex items-center justify-between">
+
+                    <Label className="font-medium">
+
+                      Password
+
+                    </Label>
+
+                    <button
+                      className="text-sm text-neutral-500 hover:text-black"
+                    >
+                      Forgot Password?
+                    </button>
+
+                  </div>
+
+                  <div className="relative">
+
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+                      type={
+                        showPassword
+                          ? "text"
+                          : "password"
+                      }
+                      value={password}
+                      onChange={(e) =>
+                        setPassword(
+                          e.target.value
+                        )
+                      }
+                      placeholder="Enter password"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-base"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowPassword(
+                          !showPassword
+                        )
+                      }
+                      className="absolute right-5 top-1/2 -translate-y-1/2"
+                    >
+
+                      {showPassword ? (
+
+                        <EyeOff className="h-5 w-5 text-neutral-500" />
+
+                      ) : (
+
+                        <Eye className="h-5 w-5 text-neutral-500" />
+
+                      )}
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+                {/* Login Button */}
+
+                <Button
+                  onClick={handleLogin}
+                  disabled={loading}
+                  className="mt-10 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900"
+                >
+
+                  {loading ? (
+
+                    <Loader2 className="h-5 w-5 animate-spin" />
+
+                  ) : (
+
+                    <>
+
+                      Login
+
+                      <ArrowRight className="ml-2 h-5 w-5" />
+
+                    </>
+
+                  )}
+
+                </Button>
+
+                {/* Divider */}
+
+                <div className="relative my-10">
+
+                  <div className="absolute inset-0 flex items-center">
+
+                    <div className="w-full border-t border-neutral-200" />
+
+                  </div>
+
+                  <div className="relative flex justify-center">
+
+                    <span className="bg-white px-5 text-sm text-neutral-400">
+
+                      OR CONTINUE WITH
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+                {/* Social Buttons */}
+
+                <div className="grid grid-cols-2 gap-4">
+
+                  <Button
+                    variant="outline"
+                    onClick={signInWithGoogle}
+                    className="h-14 rounded-2xl text-base"
+                  >
+                    Google
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={signInWithApple}
+                    className="h-14 rounded-2xl text-base"
+                  >
+                    Apple
+                  </Button>
+
+                </div>
+                                {/* Phone Login */}
+
+                <div className="mt-8">
+
+                  <div className="mb-3 flex items-center gap-2">
+
+                    <Phone className="h-5 w-5 text-neutral-500" />
+
+                    <span className="font-medium">
+
+                      Continue with Phone
+
+                    </span>
+
+                  </div>
+
+                  <div className="relative">
+
+                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+                      value={phone}
+                      onChange={(e) =>
+                        setPhone(e.target.value)
+                      }
+                      placeholder="+91 9876543210"
+                      className="h-14 rounded-2xl pl-14"
+                    />
+
+                  </div>
+
+                  {otpSent && (
+
+                    <Input
+                      value={otp}
+                      onChange={(e) =>
+                        setOtp(e.target.value)
+                      }
+                      placeholder="Enter OTP"
+                      className="mt-4 h-14 rounded-2xl text-center tracking-[10px]"
                     />
 
                   )}
 
+                  <Button
+                    onClick={handlePhoneLogin}
+                    disabled={loading}
+                    className="mt-4 h-14 w-full rounded-2xl bg-black"
+                  >
+
+                    {loading ? (
+
+                      <Loader2 className="h-5 w-5 animate-spin" />
+
+                    ) : otpSent ? (
+
+                      "Verify OTP"
+
+                    ) : (
+
+                      "Send OTP"
+
+                    )}
+
+                  </Button>
+
                 </div>
 
-              ))}
+                {/* Bottom */}
 
-            </div>
+                <div className="mt-10 text-center text-sm text-neutral-600">
 
-          )}
+                  Don't have an account?
 
-          {/* Body */}
+                  <button
+                    onClick={() =>
+                      setMode("signup")
+                    }
+                    className="ml-2 font-semibold text-black hover:underline"
+                  >
 
-          <div className="px-10 py-10">
-          {/* ================= LOGIN ================= */}
+                    Create Account
 
-{mode === "login" && forgotStep === 0 && (
+                  </button>
 
-  <>
+                </div>
 
-    <h2 className="text-3xl font-bold text-center">
-
-      Welcome Back
-
-    </h2>
-
-    <p className="mt-2 mb-8 text-center text-neutral-500">
-
-      Login to your VrushKart account
-
-    </p>
-
-    {/* Email */}
-
-    <div className="space-y-2">
-
-      <Label>Email Address</Label>
-
-      <div className="relative">
-
-        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          placeholder="Enter your email"
-          className="h-12 rounded-xl pl-12"
-        />
-
-      </div>
-
-    </div>
-
-    {/* Password */}
-
-    <div className="mt-6 space-y-2">
-
-      <div className="flex items-center justify-between">
-
-        <Label>Password</Label>
-
-        <button
-          onClick={() =>
-            setForgotStep(1)
-          }
-          className="text-sm text-black hover:underline"
-        >
-          Forgot Password?
-        </button>
-
-      </div>
-
-      <div className="relative">
-
-        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-        <Input
-          type={
-            showPassword
-              ? "text"
-              : "password"
-          }
-          value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
-          }
-          placeholder="Enter password"
-          className="h-12 rounded-xl pl-12 pr-12"
-        />
-
-        <button
-          type="button"
-          onClick={() =>
-            setShowPassword(
-              !showPassword
-            )
-          }
-          className="absolute right-4 top-1/2 -translate-y-1/2"
-        >
-
-          {showPassword ? (
-
-            <EyeOff className="h-5 w-5 text-neutral-400" />
-
-          ) : (
-
-            <Eye className="h-5 w-5 text-neutral-400" />
-
-          )}
-
-        </button>
-
-      </div>
-
-    </div>
-
-    {/* Remember */}
-
-    <div className="mt-5 flex items-center justify-between">
-
-      <label className="flex items-center gap-2 text-sm">
-
-        <input
-          type="checkbox"
-          className="rounded"
-        />
-
-        Remember me
-
-      </label>
-
-      <span className="text-sm text-neutral-500">
-
-        Secure Login
-
-      </span>
-
-    </div>
-
-    {/* Login Button */}
-
-    <Button
-      onClick={handleLogin}
-      disabled={loading}
-      className="mt-8 h-12 w-full rounded-xl bg-black"
-    >
-
-      {loading ? (
-
-        <Loader2 className="h-5 w-5 animate-spin" />
-
-      ) : (
-
-        <>
-          Login
-
-          <ArrowRight className="ml-2 h-5 w-5" />
-
-        </>
-
-      )}
-
-    </Button>
-
-    {/* Divider */}
-
-    <div className="relative my-8">
-
-      <div className="absolute inset-0 flex items-center">
-
-        <div className="w-full border-t border-neutral-200" />
-
-      </div>
-
-      <div className="relative flex justify-center">
-
-        <span className="bg-white px-4 text-sm text-neutral-400">
-
-          OR CONTINUE WITH
-
-        </span>
-
-      </div>
-
-    </div>
-
-    {/* OAuth */}
-
-    <div className="grid grid-cols-2 gap-4">
-
-      <Button
-        variant="outline"
-        onClick={() =>
-          handleOAuth(signInWithGoogle)
-        }
-        className="h-12 rounded-xl"
-      >
-        Google
-      </Button>
-
-      <Button
-        variant="outline"
-        onClick={() =>
-          handleOAuth(signInWithApple)
-        }
-        className="h-12 rounded-xl"
-      >
-        Apple
-      </Button>
-
-    </div>
-    {/* Phone Login */}
-
-    <div className="mt-8">
-
-      <div className="flex items-center gap-2 mb-4">
-
-        <Phone className="h-5 w-5 text-neutral-500" />
-
-        <span className="font-medium">
-
-          Login with Phone
-
-        </span>
-
-      </div>
-
-      <div className="relative">
-
-        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-        <Input
-          value={phone}
-          onChange={(e) =>
-            setPhone(e.target.value)
-          }
-          placeholder="Enter mobile number"
-          className="h-12 rounded-xl pl-12"
-        />
-
-      </div>
-
-      {otpSent && (
-
-        <Input
-          value={otp}
-          onChange={(e) =>
-            setOtp(e.target.value)
-          }
-          placeholder="Enter OTP"
-          className="mt-4 h-12 rounded-xl"
-        />
-
-      )}
-
-      <Button
-        onClick={handlePhoneLogin}
-        disabled={loading}
-        className="mt-4 h-12 w-full rounded-xl bg-black"
-      >
-
-        {loading ? (
-
-          <Loader2 className="h-5 w-5 animate-spin" />
-
-        ) : otpSent ? (
-
-          "Verify OTP"
-
-        ) : (
-
-          "Send OTP"
-
-        )}
-
-      </Button>
-
-    </div>
-
-    {/* Footer */}
-
-    <div className="mt-10 text-center text-sm text-neutral-600">
-
-      Don't have an account?
-
-      <button
-        onClick={() => {
-          setMode("signup");
-          setSignupStep(1);
-          setForgotStep(0);
-        }}
-        className="ml-2 font-semibold text-black hover:underline"
-      >
-        Create Account
-      </button>
-
-    </div>
-
-  </>
-
-)}
-
-{/* ================= SIGNUP STEP 1 ================= */}
-
-{mode === "signup" &&
- signupStep === 1 && (
-
-  <>
-
-    <h2 className="text-3xl font-bold text-center">
-
-      Create Account
-
-    </h2>
-
-    <p className="mt-2 mb-8 text-center text-neutral-500">
-
-      Verify your email to continue
-
-    </p>
-
-    <div className="space-y-2">
-
-      <Label>Email Address</Label>
-
-      <div className="relative">
-
-        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-        <Input
-          value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
-          placeholder="Enter your email"
-          className="h-12 rounded-xl pl-12"
-        />
-
-      </div>
-
-    </div>
-
-    {!otpSent ? (
-
-      <Button
-        onClick={sendEmailOtp}
-        disabled={loading}
-        className="mt-8 h-12 w-full rounded-xl bg-black"
-      >
-
-        {loading ? (
-
-          <Loader2 className="h-5 w-5 animate-spin" />
-
-        ) : (
-
-          <>
-            Continue
-
-            <ArrowRight className="ml-2 h-5 w-5" />
-
-          </>
-
-        )}
-
-      </Button>
-
-    ) : (
-
-      <>
-              <div className="mt-8">
-
-          <Label className="mb-4 block">
-
-            Verification Code
-
-          </Label>
-
-          <div className="flex justify-between gap-2">
-
-            {emailOtp.map((digit, index) => (
-
-              <Input
-                key={index}
-                maxLength={1}
-                value={digit}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  if (!/^[0-9]?$/.test(value))
-                    return;
-
-                  const updated = [...emailOtp];
-
-                  updated[index] = value;
-
-                  setEmailOtp(updated);
-
-                  if (value && index < 5) {
-                    (
-                      document.querySelectorAll(
-                        ".otp-input"
-                      )[index + 1] as HTMLInputElement
-                    )?.focus();
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Backspace" &&
-                    !emailOtp[index] &&
-                    index > 0
-                  ) {
-                    (
-                      document.querySelectorAll(
-                        ".otp-input"
-                      )[index - 1] as HTMLInputElement
-                    )?.focus();
-                  }
-                }}
-                className="otp-input h-14 w-14 rounded-xl text-center text-lg font-bold"
-              />
-
-            ))}
-
-          </div>
-
-          <button
-            type="button"
-            onClick={sendEmailOtp}
-            className="mt-4 text-sm font-medium text-black hover:underline"
-          >
-            Resend Code
-          </button>
-
-        </div>
-
-        <Button
-          onClick={verifyEmailOtp}
-          disabled={loading}
-          className="mt-8 h-12 w-full rounded-xl bg-black"
-        >
-
-          {loading ? (
-
-            <Loader2 className="h-5 w-5 animate-spin" />
-
-          ) : (
-
-            <>
-              Verify Email
-
-              <ArrowRight className="ml-2 h-5 w-5" />
-
-            </>
-
-          )}
-
-        </Button>
-
-      </>
-
-    )}
-
-    <div className="mt-10 text-center text-sm text-neutral-600">
-
-      Already have an account?
-
-      <button
-        onClick={() => {
-          setMode("login");
-          setForgotStep(0);
-        }}
-        className="ml-2 font-semibold text-black hover:underline"
-      >
-        Login
-      </button>
-
-    </div>
-
-  </>
-
-)}
-
-{/* ================= SIGNUP STEP 2 ================= */}
-
-{mode === "signup" &&
- signupStep === 2 && (
-
-<>
-      <h2 className="text-3xl font-bold text-center">
-
-        Complete Profile
-
-      </h2>
-
-      <p className="mt-2 mb-8 text-center text-neutral-500">
-
-        Just one more step to create your account
-
-      </p>
-
-      {/* Full Name */}
-
-      <div className="space-y-2">
-
-        <Label>Full Name</Label>
-
-        <div className="relative">
-
-          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-          <Input
-            value={fullName}
-            onChange={(e) =>
-              setFullName(e.target.value)
-            }
-            placeholder="Enter your full name"
-            className="h-12 rounded-xl pl-12"
-          />
-
-        </div>
-
-      </div>
-
-      {/* Password */}
-
-      <div className="mt-6 space-y-2">
-
-        <Label>Password</Label>
-
-        <div className="relative">
-
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-          <Input
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            placeholder="Create password"
-            className="h-12 rounded-xl pl-12 pr-12"
-          />
-
-          <button
-            type="button"
-            onClick={() =>
-              setShowPassword(
-                !showPassword
-              )
-            }
-            className="absolute right-4 top-1/2 -translate-y-1/2"
-          >
-
-            {showPassword ? (
-
-              <EyeOff className="h-5 w-5 text-neutral-400" />
-
-            ) : (
-
-              <Eye className="h-5 w-5 text-neutral-400" />
+              </>
 
             )}
 
-          </button>
+            {/* ================= SIGNUP ================= */}
 
-        </div>
+            {mode === "signup" && (
 
-      </div>
+              <>
 
-      {/* Confirm Password */}
+                <div className="mb-10 text-center">
 
-      <div className="mt-6 space-y-2">
+                  <h2 className="text-5xl font-bold tracking-tight">
 
-        <Label>
+                    Create Account
 
-          Confirm Password
+                  </h2>
 
-        </Label>
+                  <p className="mt-4 text-lg text-neutral-500">
 
-        <div className="relative">
+                    Join the future of shopping
 
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                  </p>
 
-          <Input
-            type={
-              showConfirmPassword
-                ? "text"
-                : "password"
-            }
-            value={confirmPassword}
-            onChange={(e) =>
-              setConfirmPassword(
-                e.target.value
-              )
-            }
-            placeholder="Confirm password"
-            className="h-12 rounded-xl pl-12 pr-12"
-          />
+                </div>
 
-          <button
-            type="button"
-            onClick={() =>
-              setShowConfirmPassword(
-                !showConfirmPassword
-              )
-            }
-            className="absolute right-4 top-1/2 -translate-y-1/2"
-          >
+                <div className="mb-6">
 
-            {showConfirmPassword ? (
+                  <Label className="mb-2 block">
 
-              <EyeOff className="h-5 w-5 text-neutral-400" />
+                    Full Name
 
-            ) : (
+                  </Label>
 
-              <Eye className="h-5 w-5 text-neutral-400" />
+                  <div className="relative">
+
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+  value={fullName}
+  onChange={(e) => setFullName(e.target.value)}
+  placeholder="Full Name"
+  className="h-14 rounded-2xl pl-14"
+/>
+
+                  </div>
+
+                </div>
+
+                <div className="mb-6">
+
+                  <Label className="mb-2 block">
+
+                    Email Address
+
+                  </Label>
+
+                  <div className="relative">
+
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder="Email Address"
+  className="h-14 rounded-2xl pl-14"
+/>
+
+                  </div>
+
+                </div>
+
+                <div>
+
+                  <Label className="mb-2 block">
+
+                    Password
+
+                  </Label>
+
+                  <div className="relative">
+
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+  type={showPassword ? "text" : "password"}
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  placeholder="Create Password"
+  className="h-14 rounded-2xl pl-14 pr-14"
+/>
+
+                  </div>
+
+                </div>
+                                <div className="mt-6">
+
+                  <Label className="mb-2 block">
+
+                    Confirm Password
+
+                  </Label>
+
+                  <div className="relative">
+
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+
+                    <Input
+  type={showPassword ? "text" : "password"}
+  value={confirmPassword}
+  onChange={(e) => setConfirmPassword(e.target.value)}
+  placeholder="Confirm Password"
+  className="h-14 rounded-2xl pl-14 pr-14"
+/>
+
+                  </div>
+
+                </div>
+
+                {/* Seller */}
+
+                <label className="mt-6 flex items-center gap-3 rounded-2xl border border-neutral-200 p-4">
+
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 rounded"
+                  />
+
+                  <div>
+
+                    <p className="font-semibold">
+
+                      Register as Seller
+
+                    </p>
+
+                    <p className="text-sm text-neutral-500">
+
+                      Open your own store on
+                      VrushKart
+
+                    </p>
+
+                  </div>
+
+                </label>
+
+                {/* Register */}
+
+                <Button
+                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold"
+                >
+
+                  Create Account
+
+                  <ArrowRight className="ml-2 h-5 w-5" />
+
+                </Button>
+
+                {/* Divider */}
+
+                <div className="relative my-10">
+
+                  <div className="absolute inset-0 flex items-center">
+
+                    <div className="w-full border-t border-neutral-200" />
+
+                  </div>
+
+                  <div className="relative flex justify-center">
+
+                    <span className="bg-white px-5 text-sm text-neutral-400">
+
+                      OR SIGN UP WITH
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+
+                  <Button
+                    variant="outline"
+                    onClick={signInWithGoogle}
+                    className="h-14 rounded-2xl"
+                  >
+
+                    Google
+
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={signInWithApple}
+                    className="h-14 rounded-2xl"
+                  >
+
+                    Apple
+
+                  </Button>
+
+                </div>
+
+                <div className="mt-10 text-center text-sm text-neutral-600">
+
+                  Already have an account?
+
+                  <button
+                    onClick={() =>
+                      setMode("login")
+                    }
+                    className="ml-2 font-semibold text-black hover:underline"
+                  >
+
+                    Login
+
+                  </button>
+
+                </div>
+
+              </>
 
             )}
-
-          </button>
-
-        </div>
-
-      </div>
-
-      {/* Password Strength */}
-
-      <div className="mt-6">
-
-        <div className="flex justify-between text-sm">
-
-          <span className="text-neutral-500">
-
-            Password Strength
-
-          </span>
-
-          <span className="font-medium">
-
-            {passwordStrength() === 1 && "Weak"}
-            {passwordStrength() === 2 && "Medium"}
-            {passwordStrength() === 3 && "Strong"}
-            {passwordStrength() >= 4 && "Excellent"}
-
-          </span>
-
-        </div>
-
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-200">
-
-          <div
-            className="h-full rounded-full bg-black transition-all"
-            style={{
-              width: `${passwordStrength() * 25}%`,
-            }}
-          />
-
-        </div>
-
-      </div>
-
-      {/* Seller */}
-
-      <label className="mt-6 flex items-center gap-3">
-
-        <input
-          type="checkbox"
-          checked={sellerAccount}
-          onChange={(e) =>
-            setSellerAccount(
-              e.target.checked
-            )
-          }
-        />
-
-        Register as Seller
-
-      </label>
-
-      <Button
-        onClick={handleRegister}
-        disabled={loading}
-        className="mt-8 h-12 w-full rounded-xl bg-black"
-      >
-
-        {loading ? (
-
-          <Loader2 className="h-5 w-5 animate-spin" />
-
-        ) : (
-
-          <>
-            Create Account
-
-            <ArrowRight className="ml-2 h-5 w-5" />
-
-          </>
-
-        )}
-
-      </Button>
-
-    </>
-
-)}
-
-{/* Forgot Password starts here */}
-{/* ================= FORGOT PASSWORD ================= */}
-
-{forgotStep > 0 && (
-
-  <>
-
-    <h2 className="text-3xl font-bold text-center">
-
-      Reset Password
-
-    </h2>
-
-    <p className="mt-2 mb-8 text-center text-neutral-500">
-
-      Recover your account securely
-
-    </p>
-
-    {forgotStep === 1 && (
-
-      <>
-
-        <div className="space-y-2">
-
-          <Label>Email Address</Label>
-
-          <div className="relative">
-
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-            <Input
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              placeholder="Enter your email"
-              className="h-12 rounded-xl pl-12"
-            />
 
           </div>
 
         </div>
 
-        <Button
-          onClick={handleForgotPassword}
-          className="mt-8 h-12 w-full rounded-xl bg-black"
-        >
-          Send OTP
-        </Button>
-
-      </>
-
-    )}
-
-    {forgotStep === 2 && (
-
-      <>
-
-        <Label className="mb-4 block">
-
-          Enter OTP
-
-        </Label>
-
-        <div className="flex justify-between gap-2">
-
-          {emailOtp.map((digit, index) => (
-
-            <Input
-              key={index}
-              maxLength={1}
-              value={digit}
-              onChange={(e) => {
-
-                const updated = [...emailOtp];
-
-                updated[index] = e.target.value;
-
-                setEmailOtp(updated);
-
-              }}
-              className="h-14 w-14 rounded-xl text-center text-lg font-bold"
-            />
-
-          ))}
-
-        </div>
-
-        <Button
-          onClick={handleForgotPassword}
-          className="mt-8 h-12 w-full rounded-xl bg-black"
-        >
-          Verify OTP
-        </Button>
-
-      </>
-
-    )}
-
-    {forgotStep === 3 && (
-
-      <>
-
-        <div className="space-y-2">
-
-          <Label>
-
-            New Password
-
-          </Label>
-
-          <Input
-            type="password"
-            placeholder="New Password"
-            className="h-12 rounded-xl"
-          />
-
-        </div>
-
-        <div className="mt-6 space-y-2">
-
-          <Label>
-
-            Confirm Password
-
-          </Label>
-
-          <Input
-            type="password"
-            placeholder="Confirm Password"
-            className="h-12 rounded-xl"
-          />
-
-        </div>
-
-        <Button
-          onClick={handleForgotPassword}
-          className="mt-8 h-12 w-full rounded-xl bg-black"
-        >
-          Reset Password
-        </Button>
-
-      </>
-
-    )}
-
-  </>
-
-)}
-
-{/* Footer */}
-
-<div className="mt-12 border-t border-neutral-200 pt-8">
-
-  <div className="grid grid-cols-3 gap-6 text-center">
-
-    <div>
-
-      <Shield className="mx-auto h-7 w-7 text-black" />
-
-      <p className="mt-3 text-sm font-semibold">
-
-        Secure
-
-      </p>
-
-      <p className="text-xs text-neutral-500">
-
-        End-to-End Encryption
-
-      </p>
-
-    </div>
-
-    <div>
-
-      <Check className="mx-auto h-7 w-7 text-black" />
-
-      <p className="mt-3 text-sm font-semibold">
-
-        Trusted
-
-      </p>
-
-      <p className="text-xs text-neutral-500">
-
-        Verified Marketplace
-
-      </p>
-
-    </div>
-
-    <div>
-
-      <Lock className="mx-auto h-7 w-7 text-black" />
-
-      <p className="mt-3 text-sm font-semibold">
-
-        Protected
-
-      </p>
-
-      <p className="text-xs text-neutral-500">
-
-        Safe Payments
-
-      </p>
-
-    </div>
-
-  </div>
-
-  <p className="mt-10 text-center text-xs text-neutral-400">
-
-    © {new Date().getFullYear()} VrushKart. All rights reserved.
-
-  </p>
-
-</div>
-
-        </div>
-
       </div>
 
     </div>
 
-  </div>
+  );
 
-);
 }
