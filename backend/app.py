@@ -19,12 +19,16 @@ app.config["MAIL_PASSWORD"] = "werfotutagjmcgqp"
 
 mail = Mail(app)
 
+import os
+import mysql.connector
+
 def get_db():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Sai143aa4@",
-        database="vrukart_db"
+        host=os.getenv("DB_HOST"),
+        port=int(os.getenv("DB_PORT")),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME")
     )
 
 RAZORPAY_KEY_ID = "rzp_live_T5TuufRulT09gj"
