@@ -96,7 +96,7 @@ password: string
 
 const response =
   await fetch(
-    "http://127.0.0.1:5000/login",
+    "https://vurshcart.onrender.com/login",
     {
       method: "POST",
       headers: {
@@ -138,7 +138,7 @@ asSeller = false
 
 const response =
   await fetch(
-    "http://127.0.0.1:5000/register",
+    "https://vurshcart.onrender.com/register",
     {
       method: "POST",
       headers: {
