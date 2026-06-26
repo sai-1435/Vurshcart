@@ -1,163 +1,604 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+
 import { ShopLayout } from "@/components/ShopLayout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProductCard } from "@/components/ProductCard";
-import { Heart, Truck, Shield, RotateCcw, Star, ShoppingCart } from "lucide-react";
-import { formatINR, productImage } from "@/lib/format";
+
+import {
+  Truck,
+  Shield,
+  RotateCcw,
+  Star,
+  ShoppingCart,
+  Heart
+} from "lucide-react";
+
+import { formatINR } from "@/lib/format";
+
 import { useCart } from "@/hooks/use-cart";
-import { useAuth } from "@/contexts/AuthContext";
+
 import { toast } from "sonner";
 
 export default function ProductDetail() {
+
   const { slug } = useParams();
+
   const { add } = useCart();
-  const { user } = useAuth();
-  const [product, setProduct] = useState<any>(null);
-  const [seller, setSeller] = useState<any>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [related, setRelated] = useState<any[]>([]);
-  const [imgIdx, setImgIdx] = useState(0);
-  const [qty, setQty] = useState(1);
-  const [loading, setLoading] = useState(true);
+
+  const [product, setProduct] =
+    useState<any>(null);
+
+  const [qty, setQty] =
+    useState(1);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [wishlisted, setWishlisted] =
+    useState(false);
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const { data: p } = await supabase.from("products").select("*").eq("slug", slug!).maybeSingle();
-      if (!p) { setLoading(false); return; }
-      setProduct(p);
-      const [{ data: sp }, { data: rv }, { data: rel }] = await Promise.all([
-        supabase.from("seller_profiles").select("*").eq("user_id", p.seller_id).maybeSingle(),
-        supabase.from("reviews").select("*").eq("product_id", p.id).order("created_at", { ascending: false }).limit(10),
-        supabase.from("products").select("*").eq("category_id", p.category_id).neq("id", p.id).eq("status", "active").limit(4),
-      ]);
-      setSeller(sp); setReviews(rv ?? []); setRelated(rel ?? []);
+
+    const loadProduct = async () => {
+
+      try {
+
+        setLoading(true);
+
+        const response =
+          await fetch(
+            `http://127.0.0.1:5000/product/${slug}`
+          );
+
+        const data =
+          await response.json();
+
+        if (data.success) {
+
+          setProduct(
+            data.product
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
       setLoading(false);
-    })();
+
+    };
+
+    loadProduct();
+
   }, [slug]);
 
-  if (loading) return <ShopLayout><div className="container mx-auto px-4 py-8 grid md:grid-cols-2 gap-8"><Skeleton className="aspect-square rounded-2xl"/><div className="space-y-4"><Skeleton className="h-8 w-3/4"/><Skeleton className="h-6 w-1/3"/><Skeleton className="h-24 w-full"/></div></div></ShopLayout>;
-  if (!product) return <ShopLayout><div className="container mx-auto px-4 py-20 text-center"><p className="text-muted-foreground">Product not found.</p></div></ShopLayout>;
+  if (loading) {
 
-  const images: string[] = Array.isArray(product.images) && product.images.length ? product.images : [productImage(null)];
-  const discount = product.compare_price && Number(product.compare_price) > Number(product.price)
-    ? Math.round(((Number(product.compare_price) - Number(product.price)) / Number(product.compare_price)) * 100) : 0;
+    return (
 
-  const onWish = async () => {
-    if (!user) { toast.error("Sign in first"); return; }
-    const { error } = await supabase.from("wishlists").insert({ user_id: user.id, product_id: product.id });
-    if (error && !error.message.includes("duplicate")) toast.error(error.message);
-    else toast.success("Saved");
-  };
+      <ShopLayout>
 
-  return (
-    <ShopLayout>
-      <div className="container mx-auto px-4 py-6 md:py-10">
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary border border-border">
-              <img src={images[imgIdx]} alt={product.title} className="w-full h-full object-cover" />
-            </div>
-            {images.length > 1 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto hide-scrollbar">
-                {images.map((img, i) => (
-                  <button key={i} onClick={() => setImgIdx(i)}
-                    className={`flex-shrink-0 h-16 w-16 rounded-lg overflow-hidden border-2 ${imgIdx === i ? "border-primary" : "border-transparent"}`}>
-                    <img src={img} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </motion.div>
+        <div className="container mx-auto px-4 py-8 grid md:grid-cols-2 gap-8">
 
-          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-            {product.brand && <p className="text-sm text-muted-foreground uppercase tracking-wide">{product.brand}</p>}
-            <h1 className="text-2xl md:text-3xl font-bold mt-1">{product.title}</h1>
-            <div className="mt-2 flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-success text-white">
-                <Star className="h-3 w-3 fill-white" />{Number(product.rating ?? 4.5).toFixed(1)}
-              </div>
-              <span className="text-muted-foreground">{product.review_count ?? 0} reviews</span>
-            </div>
+          <Skeleton
+            className="aspect-square rounded-2xl"
+          />
 
-            <div className="mt-5 flex items-baseline gap-3">
-              <span className="text-3xl font-bold">{formatINR(product.price)}</span>
-              {discount > 0 && <>
-                <span className="text-muted-foreground line-through">{formatINR(product.compare_price)}</span>
-                <span className="text-success font-semibold">{discount}% off</span>
-              </>}
-            </div>
+          <div className="space-y-4">
 
-            {seller && (
-              <Link to={`/shop?seller=${seller.slug}`} className="mt-4 inline-block text-sm text-muted-foreground">
-                Sold by <span className="text-primary hover:underline font-medium">{seller.store_name}</span>
-                {seller.verified && <span className="ml-1 text-xs text-success">✓ Verified</span>}
-              </Link>
-            )}
+            <Skeleton className="h-8 w-3/4" />
 
-            <div className="mt-6 flex items-center gap-3">
-              <div className="flex items-center border border-border rounded-lg">
-                <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 hover:bg-secondary">−</button>
-                <span className="px-4 font-medium">{qty}</span>
-                <button onClick={() => setQty(qty + 1)} className="px-3 py-2 hover:bg-secondary">+</button>
-              </div>
-              <span className="text-sm text-muted-foreground">{product.stock} in stock</span>
-            </div>
+            <Skeleton className="h-6 w-1/3" />
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button size="lg" onClick={() => add(product.id, qty)} className="flex-1 min-w-40 bg-gradient-hero text-white border-0">
-                <ShoppingCart className="h-4 w-4 mr-2" /> Add to Cart
-              </Button>
-              <Button size="lg" variant="outline" onClick={onWish}>
-                <Heart className="h-4 w-4 mr-2" /> Wishlist
-              </Button>
-            </div>
+            <Skeleton className="h-24 w-full" />
 
-            <div className="mt-6 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-secondary"><Truck className="h-4 w-4 text-primary"/>Fast Delivery</div>
-              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-secondary"><RotateCcw className="h-4 w-4 text-primary"/>Easy Returns</div>
-              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-secondary"><Shield className="h-4 w-4 text-primary"/>Secure Pay</div>
-            </div>
+          </div>
 
-            {product.description && (
-              <div className="mt-8 prose prose-sm max-w-none">
-                <h3 className="text-lg font-semibold mb-2">About this product</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">{product.description}</p>
-              </div>
-            )}
-          </motion.div>
         </div>
 
-        {reviews.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-xl font-bold mb-4">Reviews</h2>
-            <div className="grid gap-3">
-              {reviews.map(r => (
-                <div key={r.id} className="bg-card border border-border rounded-xl p-4">
-                  <div className="flex items-center gap-2">
-                    {[...Array(5)].map((_, i) => <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-warning text-warning" : "text-muted"}`} />)}
-                    {r.title && <span className="text-sm font-semibold">{r.title}</span>}
-                  </div>
-                  {r.body && <p className="text-sm text-muted-foreground mt-1">{r.body}</p>}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+      </ShopLayout>
 
-        {related.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-xl font-bold mb-4">You might also like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {related.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
+    );
+
+  }
+
+  if (!product) {
+
+    return (
+
+      <ShopLayout>
+
+        <div className="container mx-auto px-4 py-20 text-center">
+
+          <p className="text-muted-foreground">
+
+            Product not found
+
+          </p>
+
+        </div>
+
+      </ShopLayout>
+
+    );
+
+  }
+    return (
+
+    <ShopLayout>
+
+      <div className="container mx-auto px-4 py-6 md:py-10">
+
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+
+            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary border border-border">
+
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+
             </div>
-          </section>
-        )}
+
+          </motion.div>
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: 10
+            }}
+            animate={{
+              opacity: 1,
+              x: 0
+            }}
+          >
+
+            <p className="text-sm text-muted-foreground uppercase tracking-wide">
+
+              {product.brand || "Vrukart"}
+
+            </p>
+
+            <h1 className="text-2xl md:text-4xl font-bold mt-2">
+
+              {product.name}
+
+            </h1>
+
+            <div className="mt-3 flex items-center gap-3">
+
+              <div className="flex items-center gap-1 px-3 py-1 rounded bg-green-600 text-white">
+
+                <Star className="h-4 w-4 fill-white" />
+
+                {Number(
+                  product.rating || 4.5
+                ).toFixed(1)}
+
+              </div>
+
+              <span className="text-sm text-muted-foreground">
+
+                245 Ratings & Reviews
+
+              </span>
+
+            </div>
+
+            <div className="mt-6">
+
+              <span className="text-4xl font-bold">
+
+                {formatINR(
+                  Number(product.price)
+                )}
+
+              </span>
+
+            </div>
+
+            <div className="mt-6 p-4 border rounded-xl bg-secondary">
+
+              <h3 className="font-semibold mb-3">
+
+                Delivery Information
+
+              </h3>
+
+              <p>
+                🚚 Free Delivery Available
+              </p>
+
+              <p>
+                📦 Stock Available:
+                {" "}
+                {product.stock}
+              </p>
+
+              <p>
+                🔒 Secure Payment
+              </p>
+
+              <p>
+                ↩️ Easy Returns
+              </p>
+
+            </div>
+            
+
+            <div className="mt-6 flex items-center gap-3">
+
+              <div className="flex items-center border border-border rounded-lg">
+
+                <button
+                  onClick={() =>
+                    setQty(
+                      Math.max(
+                        1,
+                        qty - 1
+                      )
+                    )
+                  }
+                  className="px-4 py-2"
+                >
+                 -
+                </button>
+
+                <span className="px-5 font-medium">
+
+                  {qty}
+
+                </span>
+
+                <button
+                  onClick={() =>
+                    setQty(qty + 1)
+                  }
+                  className="px-4 py-2"
+                >
+                  +
+                </button>
+
+                          </div>
+                          </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+
+              <Button
+  size="icon"
+  variant="outline"
+  onClick={async () => {
+
+    const user = JSON.parse(
+      localStorage.getItem("user") || "{}"
+    );
+
+    if (!user?.id) {
+      toast.error("Please Login");
+      return;
+    }
+
+    try {
+
+      await fetch(
+        "http://127.0.0.1:5000/add-to-wishlist",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            product_id: product.id
+          })
+        }
+      );
+
+      setWishlisted(true);
+
+      toast.success(
+        "Added To Wishlist ❤️"
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      toast.error(
+        "Failed To Add Wishlist"
+      );
+
+    }
+
+  }}
+>
+
+  <Heart
+    className={`h-5 w-5 ${
+      wishlisted
+        ? "fill-red-500 text-red-500"
+        : ""
+    }`}
+  />
+
+</Button>
+
+              <Button
+                size="lg"
+                className="flex-1 min-w-40 bg-yellow-500 text-black hover:bg-yellow-400"
+                onClick={() =>
+                  add(
+                    Number(product.id),
+                    qty
+                  )
+                }
+              >
+
+                <ShoppingCart className="h-4 w-4 mr-2" />
+
+                Add To Cart
+
+              </Button>
+
+              <Button
+                size="lg"
+                className="flex-1 min-w-40 bg-orange-500 text-white hover:bg-orange-400"
+                onClick={async () => {
+
+                  await add(
+                    Number(product.id),
+                    qty
+                  );
+
+                  window.location.href =
+                    "/checkout";
+
+                }}
+              >
+
+                Buy Now
+
+              </Button>
+
+            </div>
+
+            <div className="mt-8 grid grid-cols-3 gap-3">
+
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary">
+
+                <Truck className="h-5 w-5 text-primary" />
+
+                <span className="text-xs text-center">
+
+                  Fast Delivery
+
+                </span>
+
+              </div>
+
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary">
+
+                <RotateCcw className="h-5 w-5 text-primary" />
+
+                <span className="text-xs text-center">
+
+                  Easy Returns
+
+                </span>
+
+              </div>
+
+              <div className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary">
+
+                <Shield className="h-5 w-5 text-primary" />
+
+                <span className="text-xs text-center">
+
+                  Secure Payment
+
+                </span>
+
+              </div>
+
+            </div>
+
+            <div className="mt-8">
+
+              <h3 className="text-xl font-semibold mb-3">
+
+                About This Product
+
+              </h3>
+
+              <p className="text-muted-foreground leading-relaxed">
+
+                {
+                  product.description ||
+                  "Premium quality product available on Vrukart with fast delivery, secure payment and easy returns."
+                }
+
+              </p>
+
+            </div>
+                        <div className="mt-10">
+
+              <h3 className="text-xl font-semibold mb-4">
+
+                Product Specifications
+
+              </h3>
+
+              <div className="border rounded-xl overflow-hidden">
+
+                <div className="grid grid-cols-2 border-b">
+
+                  <div className="p-3 font-medium bg-secondary">
+                    Brand
+                  </div>
+
+                  <div className="p-3">
+                    {product.brand || "Vrukart"}
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-2 border-b">
+
+                  <div className="p-3 font-medium bg-secondary">
+                    Category
+                  </div>
+
+                  <div className="p-3">
+                    {product.category || "General"}
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-2 border-b">
+
+                  <div className="p-3 font-medium bg-secondary">
+                    Stock
+                  </div>
+
+                  <div className="p-3">
+                    {product.stock}
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-2">
+
+                  <div className="p-3 font-medium bg-secondary">
+                    Rating
+                  </div>
+
+                  <div className="p-3">
+                    {product.rating || "4.5"}
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="mt-10">
+
+              <h3 className="text-xl font-semibold mb-4">
+
+                Customer Reviews
+
+              </h3>
+
+              <div className="space-y-4">
+
+                <div className="border rounded-xl p-4">
+
+                  <div className="flex items-center gap-2 mb-2">
+
+                    ⭐⭐⭐⭐⭐
+
+                  </div>
+
+                  <p>
+
+                    Excellent product quality and fast delivery.
+
+                  </p>
+
+                  <p className="text-sm text-muted-foreground mt-2">
+
+                    Verified Customer
+
+                  </p>
+
+                </div>
+
+                <div className="border rounded-xl p-4">
+
+                  <div className="flex items-center gap-2 mb-2">
+
+                    ⭐⭐⭐⭐⭐
+
+                  </div>
+
+                  <p>
+
+                    Worth the price. Highly recommended.
+
+                  </p>
+
+                  <p className="text-sm text-muted-foreground mt-2">
+
+                    Verified Customer
+
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="mt-10">
+
+              <h3 className="text-xl font-semibold mb-4">
+
+                Similar Products
+
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                <div className="border rounded-xl p-4 text-center">
+
+                  More products coming soon...
+
+                </div>
+
+                <div className="border rounded-xl p-4 text-center">
+
+                  More products coming soon...
+
+                </div>
+
+                <div className="border rounded-xl p-4 text-center">
+
+                  More products coming soon...
+
+                </div>
+
+                <div className="border rounded-xl p-4 text-center">
+
+                  More products coming soon...
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </motion.div>
+
+        </div>
+
       </div>
+
     </ShopLayout>
+
   );
+
 }

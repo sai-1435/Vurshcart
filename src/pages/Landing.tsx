@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
+
 const categories = [
   { name: "Electronics", slug: "electronics", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80" },
   { name: "Fashion", slug: "fashion", img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&q=80" },
@@ -170,6 +171,42 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      {/* PRODUCTS */}
+<section className="container mx-auto px-4 py-16">
+  <h2 className="text-3xl font-bold mb-8">
+    Featured Products
+  </h2>
+
+  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="bg-card rounded-xl border p-4">
+      <img
+        src="https://images.unsplash.com/photo-1592750475338-74b7b21085ab"
+        alt="iPhone"
+        className="w-full h-56 object-cover rounded-lg"
+      />
+      <h3 className="font-semibold mt-3">
+        Apple iPhone 16
+      </h3>
+      <p className="text-primary font-bold">
+        ₹79,999
+      </p>
+    </div>
+
+    <div className="bg-card rounded-xl border p-4">
+      <img
+        src="https://images.unsplash.com/photo-1610945265064-0e34e5519bbf"
+        alt="Samsung"
+        className="w-full h-56 object-cover rounded-lg"
+      />
+      <h3 className="font-semibold mt-3">
+        Samsung Galaxy S25
+      </h3>
+      <p className="text-primary font-bold">
+        ₹69,999
+      </p>
+    </div>
+  </div>
+</section>
 
       <Footer />
     </div>

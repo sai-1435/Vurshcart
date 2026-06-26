@@ -1,72 +1,193 @@
 import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export interface CartItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  product: {
-    id: string;
-    title: string;
-    slug: string;
-    price: number;
-    images: any;
-    stock: number;
-    seller_id: string;
-  };
+id: number;
+quantity: number;
+name: string;
+price: number;
+image_url: string;
 }
 
 export function useCart() {
-  const { user } = useAuth();
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!user) { setItems([]); return; }
-    setLoading(true);
-    const { data } = await supabase
-      .from("cart_items")
-      .select("id, product_id, quantity, product:products(id,title,slug,price,images,stock,seller_id)")
-      .eq("user_id", user.id);
-    setItems((data ?? []) as any);
-    setLoading(false);
-  }, [user]);
+const [items, setItems] =
+useState<CartItem[]>([]);
 
-  useEffect(() => { load(); }, [load]);
+const [loading, setLoading] =
+useState(false);
 
-  const add = async (productId: string, qty = 1) => {
-    if (!user) { toast.error("Please sign in to add items"); return; }
-    const existing = items.find(i => i.product_id === productId);
-    if (existing) {
-      await supabase.from("cart_items").update({ quantity: existing.quantity + qty }).eq("id", existing.id);
-    } else {
-      await supabase.from("cart_items").insert({ user_id: user.id, product_id: productId, quantity: qty });
-    }
-    toast.success("Added to cart");
+const user = JSON.parse(
+localStorage.getItem("user") || "{}"
+);
+
+const load = useCallback(async () => {
+
+
+if (!user?.id) {
+  setItems([]);
+  return;
+}
+
+setLoading(true);
+
+try {
+
+  const response =
+    await fetch(
+      `http://127.0.0.1:5000/cart/${user.id}`
+    );
+
+  const data =
+    await response.json();
+
+  if (data.success) {
+    setItems(data.items);
+  }
+
+} catch (error) {
+  console.error(error);
+}
+
+setLoading(false);
+
+
+}, [user?.id]);
+
+useEffect(() => {
+load();
+}, [load]);
+
+const add = async (
+productId: number,
+qty = 1
+) => {
+
+
+if (!user?.id) {
+  toast.error("Please Login");
+  return;
+}
+
+try {
+
+  const response =
+    await fetch(
+      "http://127.0.0.1:5000/add-to-cart",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          product_id: productId,
+          quantity: qty
+        })
+      }
+    );
+
+  const data =
+    await response.json();
+
+  if (data.success) {
+    toast.success(
+      "Added To Cart"
+    );
     load();
-  };
+  }
 
-  const update = async (id: string, qty: number) => {
-    if (qty < 1) return remove(id);
-    await supabase.from("cart_items").update({ quantity: qty }).eq("id", id);
-    load();
-  };
+} catch (error) {
+  console.error(error);
+}
 
-  const remove = async (id: string) => {
-    await supabase.from("cart_items").delete().eq("id", id);
-    load();
-  };
 
-  const clear = async () => {
-    if (!user) return;
-    await supabase.from("cart_items").delete().eq("user_id", user.id);
-    setItems([]);
-  };
+};
 
-  const subtotal = items.reduce((s, i) => s + Number(i.product?.price ?? 0) * i.quantity, 0);
-  const count = items.reduce((s, i) => s + i.quantity, 0);
+const update = async (
+cartId: number,
+qty: number
+) => {
 
-  return { items, loading, add, update, remove, clear, subtotal, count, reload: load };
+
+await fetch(
+  "http://127.0.0.1:5000/update-cart",
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+    body: JSON.stringify({
+      cart_id: cartId,
+      quantity: qty
+    })
+  }
+);
+
+load();
+
+
+};
+
+const remove = async (
+cartId: number
+) => {
+
+
+await fetch(
+  `http://127.0.0.1:5000/remove-cart/${cartId}`,
+  {
+    method: "DELETE"
+  }
+);
+
+load();
+
+
+};
+
+const clear = async () => {
+
+if (!user?.id) return;
+
+await fetch(
+  `http://127.0.0.1:5000/clear-cart/${user.id}`,
+  {
+    method: "DELETE"
+  }
+);
+
+setItems([]);
+
+};
+
+const subtotal =
+items.reduce(
+(sum, item) =>
+sum +
+Number(item.price) *
+item.quantity,
+0
+);
+
+const count =
+items.reduce(
+(sum, item) =>
+sum + item.quantity,
+0
+);
+
+return {
+items,
+loading,
+add,
+update,
+remove,
+clear,
+subtotal,
+count,
+reload: load
+};
 }
