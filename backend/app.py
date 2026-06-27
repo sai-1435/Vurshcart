@@ -590,6 +590,58 @@ def save_order():
         "tracking_id": tracking_id,
         "expected_delivery": expected_delivery
     })
+@app.route("/order/<int:order_id>", methods=["GET"])
+def get_order(order_id):
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM orders
+        WHERE id=%s
+        """,
+        (order_id,)
+    )
+
+    order = cursor.fetchone()
+
+    if not order:
+        cursor.close()
+        db.close()
+
+        return jsonify({
+            "success": False,
+            "message": "Order not found"
+        }), 404
+
+    cursor.execute(
+        """
+        SELECT
+            order_items.id,
+            order_items.quantity,
+            products.name AS title,
+            products.price,
+            products.image_url
+        FROM order_items
+        JOIN products
+        ON order_items.product_id = products.id
+        WHERE order_items.order_id=%s
+        """,
+        (order_id,)
+    )
+
+    items = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return jsonify({
+        "success": True,
+        "order": order,
+        "items": items
+    })
 @app.route("/add-to-wishlist", methods=["POST"])
 def add_to_wishlist():
 

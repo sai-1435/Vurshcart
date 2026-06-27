@@ -16,8 +16,8 @@ export default function Wishlist() {
     try {
 
       const response = await fetch(
-        `http://127.0.0.1:5000/wishlist/${user.id}`
-      );
+  `https://vurshcart.onrender.com/wishlist/${user.id}`
+);
 
       const data = await response.json();
 
@@ -46,11 +46,11 @@ export default function Wishlist() {
   ) => {
 
     await fetch(
-      `http://127.0.0.1:5000/remove-wishlist/${wishlistId}`,
-      {
-        method: "DELETE"
-      }
-    );
+  `https://vurshcart.onrender.com/remove-wishlist/${wishlistId}`,
+  {
+    method: "DELETE"
+  }
+);
 
     loadWishlist();
 

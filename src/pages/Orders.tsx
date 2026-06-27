@@ -17,8 +17,8 @@ export default function Orders() {
       try {
 
         const response = await fetch(
-          `http://127.0.0.1:5000/orders/${user?.id}`
-        );
+  `https://vurshcart.onrender.com/orders/${user?.id}`
+);
 
         const data = await response.json();
 

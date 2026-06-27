@@ -48,10 +48,9 @@ export default function ProductDetail() {
 
         setLoading(true);
 
-        const response =
-          await fetch(
-            `http://127.0.0.1:5000/product/${slug}`
-          );
+        await fetch(
+  `https://vurshcart.onrender.com/product/${slug}`
+);
 
         const data =
           await response.json();
@@ -293,7 +292,7 @@ export default function ProductDetail() {
     try {
 
       await fetch(
-        "http://127.0.0.1:5000/add-to-wishlist",
+  "https://vurshcart.onrender.com/add-to-wishlist",
         {
           method: "POST",
           headers: {
