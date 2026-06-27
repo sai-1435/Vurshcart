@@ -140,12 +140,14 @@ export default function Auth() {
 
     if (mode === "signup") {
       if (registerStep === 1) {
-        return sendEmailOtp();
-      }
+  await sendEmailOtp();
+  return;
+}
 
-      if (registerStep === 2) {
-        return verifyEmailOtp();
-      }
+if (registerStep === 2) {
+  await verifyEmailOtp();
+  return;
+}
 
       if (!fullName.trim()) {
         toast.error("Enter your full name");
