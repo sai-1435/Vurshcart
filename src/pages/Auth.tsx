@@ -1,27 +1,32 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Loader2,
-  User,
-  Phone,
-  Shield,
-} from "lucide-react";
-
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
-
-type AuthMode = "login" | "signup";
+import { Loader2, Mail, Phone } from "lucide-react";
 
 export default function Auth() {
   const navigate = useNavigate();
+
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [asSeller, setAsSeller] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const {
     signInWithGoogle,
@@ -30,32 +35,10 @@ export default function Auth() {
     verifyPhoneOtp,
   } = useAuth();
 
-  const [mode, setMode] = useState<AuthMode>("login");
-
-  const [loading, setLoading] = useState(false);
-
-  const [email, setEmail] = useState("");
-
-  const [password, setPassword] = useState("");
-
-  const [fullName, setFullName] = useState("");
-
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [phone, setPhone] = useState("");
-
-  const [otp, setOtp] = useState("");
-
-  const [otpSent, setOtpSent] = useState(false);
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleLogin = async () => {
+  const sendEmailOtp = async () => {
     try {
-      setLoading(true);
-
       const response = await fetch(
-        "https://vurshcart.onrender.com/login",
+        "https://vurshcart.onrender.com/send-otp",
         {
           method: "POST",
           headers: {
@@ -63,7 +46,6 @@ export default function Auth() {
           },
           body: JSON.stringify({
             email,
-            password,
           }),
         }
       );
@@ -71,584 +53,375 @@ export default function Auth() {
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        toast.success("Welcome Back");
-        navigate("/");
+        setEmailOtpSent(true);
+        toast.success("OTP sent");
       } else {
         toast.error(data.message);
       }
-    } catch {
-      toast.error("Login Failed");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      toast.error("Failed to send email OTP");
     }
   };
 
-  const handlePhoneLogin = async () => {
-    toast.success("Phone Login Coming Soon");
+  const verifyEmailOtp = async () => {
+    try {
+      const response = await fetch(
+        "https://vurshcart.onrender.com/verify-otp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            otp: emailOtp,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEmailVerified(true);
+        toast.success("Email Verified");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      toast.error("Verification failed");
+    }
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    try {
+      const url =
+        mode === "signin"
+          ? "https://vurshcart.onrender.com/login"
+          : "https://vurshcart.onrender.com/register";
+
+      const body =
+        mode === "signin"
+          ? {
+              email,
+              password,
+            }
+          : {
+              full_name: fullName,
+              email,
+              password,
+              role: asSeller ? "seller" : "user",
+            };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (mode === "signin") {
+          localStorage.setItem(
+            "user",
+            JSON.stringify(data.user)
+          );
+
+          toast.success("Login Successful");
+
+          navigate("/");
+        } else {
+          toast.success("Account Created Successfully");
+          setMode("signin");
+        }
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Server Error");
+    }
+
+    setLoading(false);
+  };
+
+  const onOAuth = async (fn: () => Promise<void>) => {
+    setLoading(true);
+
+    try {
+      await fn();
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+
+    setLoading(false);
+  };
+
+  const onPhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    try {
+      if (!otpSent) {
+        await signInWithPhone(phone);
+        setOtpSent(true);
+        toast.success("OTP Sent");
+      } else {
+        await verifyPhoneOtp(phone, otp);
+        toast.success("Welcome!");
+        navigate("/");
+      }
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-6 py-10">
-      <div className="w-full max-w-[1450px] h-[92vh] rounded-[36px] overflow-hidden bg-white shadow-[0_30px_80px_rgba(0,0,0,0.15)] flex">
+    <div className="min-h-screen grid md:grid-cols-2 bg-gradient-soft">
+      <div className="hidden md:flex flex-col justify-between p-12 bg-gradient-hero text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2),transparent_60%)]" />
 
-        {/* LEFT PANEL */}
-
-        <div className="relative w-[46%] bg-black text-white overflow-hidden flex items-center justify-center">
-
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-900 to-black" />
-
-          {/* Lamp */}
-
-          <div className="absolute top-0 left-1/2 -translate-x-1/2">
-            <div className="h-20 w-[2px] bg-neutral-600" />
-            <div className="h-20 w-32 rounded-b-full bg-neutral-900 border border-neutral-700 shadow-2xl" />
-          </div>
-                    {/* Brand */}
-
-          <div className="relative z-10 flex h-full flex-col items-center justify-center px-12 text-center">
-
-            {/* VK Logo */}
-
-            <div className="select-none">
-
-              <h1
-                className="text-[80px] font-black tracking-[-8px] leading-none"
-                style={{
-                  fontFamily: "Georgia, serif",
-                }}
-              >
-                VK
-              </h1>
-
-              <p className="mt-2 text-[28px] font-light tracking-[12px] uppercase">
-                VRUSHKART
-              </p>
-
-            </div>
-
-            <div className="mt-8 h-px w-52 bg-neutral-700 relative">
-
-              <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
-
-            </div>
-
-            <h2 className="mt-6 text-4xl font-bold leading-tight">
-              India's Premium
-              <br />
-              AI Marketplace
-            </h2>
-
-            <p className="mt-6 max-w-sm text-lg leading-8 text-neutral-400">
-              Shop smarter, sell faster and experience the next generation
-              marketplace powered by AI.
-            </p>
-
-            <div className="mt-14 flex items-center gap-3 rounded-full border border-neutral-700 px-6 py-4">
-
-              <Shield className="h-6 w-6" />
-
-              <div className="text-left">
-
-                <p className="font-semibold">
-                  Trusted Platform
-                </p>
-
-                <p className="text-sm text-neutral-400">
-                  Secure • Reliable • Fast
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Curved Divider */}
-
-          <div className="absolute right-[-120px] top-0 h-full w-[240px] rounded-full bg-white z-20" />
-
+        <div className="relative">
+          <Link to="/" className="text-white">
+            <Logo />
+          </Link>
         </div>
 
-        {/* RIGHT PANEL */}
-
-        <div className="relative flex flex-1 items-center justify-center bg-white px-14 py-10 overflow-hidden">
-
-          <div className="w-full max-w-[470px]">
-
-            <div className="mb-6text-center">
-
-              <h2 className="text-5xl font-bold tracking-tight">
-                Welcome Back
-              </h2>
-
-              <p className="mt-4 text-lg text-neutral-500">
-                Login to your account
-              </p>
-
-            </div>
-
-            {/* Tabs */}
-
-            <div className="mb-6 flex rounded-xl bg-neutral-100 p-1">
-
-              <button
-                onClick={() => setMode("login")}
-                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
-                  mode === "login"
-                    ? "bg-black text-white"
-                    : "text-neutral-600"
-                }`}
-              >
-                Login
-              </button>
-
-              <button
-                onClick={() => setMode("signup")}
-                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
-                  mode === "signup"
-                    ? "bg-black text-white"
-                    : "text-neutral-600"
-                }`}
-              >
-                Create Account
-              </button>
-
-            </div>
-                        {/* LOGIN */}
-
-            {mode === "login" && (
-              <>
-                {/* Email */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-2 block font-medium">
-                    Email Address
-                  </Label>
-
-                  <div className="relative">
-
-                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* Password */}
-
-                <div>
-
-                  <div className="mb-2 flex items-center justify-between">
-
-                    <Label className="font-medium">
-                      Password
-                    </Label>
-
-                    <button className="text-sm text-neutral-500 hover:text-black transition">
-                      Forgot Password?
-                    </button>
-
-                  </div>
-
-                  <div className="relative">
-
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-5 top-1/2 -translate-y-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-neutral-500" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-neutral-500" />
-                      )}
-                    </button>
-
-                  </div>
-
-                </div>
-
-                {/* Login Button */}
-
-                <Button
-                  onClick={handleLogin}
-                  disabled={loading}
-                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      Login
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
-
-                {/* Divider */}
-
-                <div className="relative my-6">
-
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-neutral-200" />
-                  </div>
-
-                  <div className="relative flex justify-center">
-
-                    <span className="bg-white px-5 text-sm tracking-wide text-neutral-400">
-                      OR CONTINUE WITH
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* Social Buttons */}
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithGoogle}
-                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
-                  >
-                    Google
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithApple}
-                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
-                  >
-                    Apple
-                  </Button>
-
-                </div>
-                                {/* Phone Login */}
-
-                <div className="mt-8">
-
-                  <div className="mb-3 flex items-center gap-2">
-
-                    <Phone className="h-5 w-5 text-neutral-500" />
-
-                    <span className="font-medium">
-                      Continue with Phone
-                    </span>
-
-                  </div>
-
-                  <div className="relative">
-
-                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 9876543210"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
-                    />
-
-                  </div>
-
-                  {otpSent && (
-
-                    <Input
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Enter OTP"
-                      className="mt-4 h-14 rounded-2xl border-neutral-300 text-center tracking-[10px]"
-                    />
-
-                  )}
-
-                  <Button
-                    onClick={handlePhoneLogin}
-                    disabled={loading}
-                    className="mt-4 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
-                  >
-                    {loading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : otpSent ? (
-                      "Verify OTP"
-                    ) : (
-                      "Send OTP"
-                    )}
-                  </Button>
-
-                </div>
-
-                {/* Bottom */}
-
-                <div className="mt-6 text-center text-sm text-neutral-600">
-
-                  Don't have an account?
-
-                  <button
-                    onClick={() => setMode("signup")}
-                    className="ml-2 font-semibold text-black hover:underline"
-                  >
-                    Create Account
-                  </button>
-
-                </div>
-
-              </>
-            )}
-
-            {/* ================= SIGNUP ================= */}
-
-            {mode === "signup" && (
-
-              <>
-
-                <div className="mb-6 text-center">
-
-                  <h2 className="text-5xl font-bold tracking-tight">
-                    Create Account
-                  </h2>
-
-                  <p className="mt-4 text-lg text-neutral-500">
-                    Join the future of shopping
-                  </p>
-
-                </div>
-
-                {/* Full Name */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-2 block font-medium">
-                    Full Name
-                  </Label>
-
-                  <div className="relative">
-
-                    <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* Email */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-2 block font-medium">
-                    Email Address
-                  </Label>
-
-                  <div className="relative">
-
-                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
-                    />
-
-                  </div>
-
-                </div>
-                                {/* Password */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-2 block font-medium">
-                    Password
-                  </Label>
-
-                  <div className="relative">
-
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a password"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-5 top-1/2 -translate-y-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-neutral-500" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-neutral-500" />
-                      )}
-                    </button>
-
-                  </div>
-
-                </div>
-
-                {/* Confirm Password */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-2 block font-medium">
-                    Confirm Password
-                  </Label>
-
-                  <div className="relative">
-
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm your password"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-5 top-1/2 -translate-y-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-neutral-500" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-neutral-500" />
-                      )}
-                    </button>
-
-                  </div>
-
-                </div>
-
-                {/* Seller Account */}
-
-                <label className="mt-2 flex cursor-pointer items-start gap-4 rounded-2xl border border-neutral-200 p-5 transition hover:border-black hover:bg-neutral-50">
-
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-5 w-5 rounded border-neutral-300"
-                  />
-
-                  <div>
-
-                    <p className="font-semibold text-black">
-                      Register as Seller
-                    </p>
-
-                    <p className="mt-1 text-sm leading-6 text-neutral-500">
-                      Open your own store on VrushKart and start selling products
-                      across India with AI-powered tools.
-                    </p>
-
-                  </div>
-
-                </label>
-
-                {/* Create Account */}
-
-                <Button
-                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
-                >
-                  Create Account
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-
-                {/* Divider */}
-
-                <div className="relative my-6">
-
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-neutral-200" />
-                  </div>
-
-                  <div className="relative flex justify-center">
-
-                    <span className="bg-white px-5 text-sm tracking-wide text-neutral-400">
-                      OR SIGN UP WITH
-                    </span>
-
-                  </div>
-
-                </div>
-                                {/* Social Buttons */}
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithGoogle}
-                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
-                  >
-                    Google
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithApple}
-                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
-                  >
-                    Apple
-                  </Button>
-
-                </div>
-
-                {/* Bottom Text */}
-
-                <div className="mt-6 text-center text-sm text-neutral-600">
-
-                  Already have an account?
-
-                  <button
-                    onClick={() => setMode("login")}
-                    className="ml-2 font-semibold text-black hover:underline"
-                  >
-                    Login
-                  </button>
-
-                </div>
-
-              </>
-
-            )}
-
-          </div>
-
+        <div className="relative">
+          <h2 className="text-3xl font-bold leading-tight">
+            The future of commerce is intelligent.
+          </h2>
+
+          <p className="mt-3 text-white/85">
+            Join millions of shoppers and sellers on India's AI-powered marketplace.
+          </p>
         </div>
 
+        <div className="relative text-sm text-white/70">
+          © {new Date().getFullYear()} Vrukart
+        </div>
       </div>
 
-    </div>
+      <div className="flex items-center justify-center p-6 md:p-12">
+        <div className="w-full max-w-md">
+          <div className="md:hidden">
+            <Link to="/">
+              <Logo />
+            </Link>
+          </div>
+                    <h1 className="text-2xl font-bold">
+            {mode === "signin" ? "Welcome back" : "Create your account"}
+          </h1>
 
+          <p className="text-sm text-muted-foreground mt-1">
+            Shop or sell on VrushCart
+          </p>
+
+          <Tabs defaultValue="email" className="mt-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="email">
+                <Mail className="h-4 w-4 mr-2" />
+                Email
+              </TabsTrigger>
+
+              <TabsTrigger value="phone">
+                <Phone className="h-4 w-4 mr-2" />
+                Phone
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="email" className="mt-4 space-y-4">
+              <form onSubmit={onSubmit} className="space-y-3">
+                {mode === "signup" && (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={sendEmailOtp}
+                      className="w-full"
+                    >
+                      Send Email OTP
+                    </Button>
+
+                    {emailOtpSent && (
+                      <>
+                        <Input
+                          placeholder="Enter Email OTP"
+                          value={emailOtp}
+                          onChange={(e) =>
+                            setEmailOtp(e.target.value)
+                          }
+                        />
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={verifyEmailOtp}
+                        >
+                          Verify OTP
+                        </Button>
+                      </>
+                    )}
+
+                    <div>
+                      <Label>Full Name</Label>
+                      <Input
+                        value={fullName}
+                        onChange={(e) =>
+                          setFullName(e.target.value)
+                        }
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label>Password</Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
+                    required
+                  />
+                </div>
+
+                {mode === "signup" && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={asSeller}
+                      onChange={(e) =>
+                        setAsSeller(e.target.checked)
+                      }
+                    />
+                    Register as Seller
+                  </label>
+                )}
+
+                <Button
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : mode === "signin" ? (
+                    "Login"
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
+              </form>
+
+              <div className="my-4 flex items-center gap-2">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground">
+                  OR
+                </span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    onOAuth(signInWithGoogle)
+                  }
+                >
+                  Google
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    onOAuth(signInWithApple)
+                  }
+                >
+                  Apple
+                </Button>
+              </div>
+
+              <p className="text-center text-sm mt-4">
+                {mode === "signin"
+                  ? "Don't have an account?"
+                  : "Already have an account?"}{" "}
+                <button
+                  type="button"
+                  className="text-primary underline"
+                  onClick={() =>
+                    setMode(
+                      mode === "signin"
+                        ? "signup"
+                        : "signin"
+                    )
+                  }
+                >
+                  {mode === "signin"
+                    ? "Sign Up"
+                    : "Sign In"}
+                </button>
+              </p>
+            </TabsContent>
+
+            <TabsContent value="phone">
+              <form
+                onSubmit={onPhone}
+                className="space-y-3"
+              >
+                <Input
+                  placeholder="Phone Number"
+                  value={phone}
+                  onChange={(e) =>
+                    setPhone(e.target.value)
+                  }
+                />
+
+                {otpSent && (
+                  <Input
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) =>
+                      setOtp(e.target.value)
+                    }
+                  />
+                )}
+
+                <Button
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {otpSent
+                    ? "Verify OTP"
+                    : "Send OTP"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
   );
 }
