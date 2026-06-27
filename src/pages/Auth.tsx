@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
-import { FaApple } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
   Mail,
@@ -9,10 +7,16 @@ import {
   EyeOff,
   ArrowRight,
   Loader2,
-  User,
   Phone,
-  Apple,
+  User,
+  ShieldCheck,
+  Truck,
+  Headphones,
+  Award,
 } from "lucide-react";
+
+import { FcGoogle } from "react-icons/fc";
+import { FaApple } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,211 +37,33 @@ export default function Auth() {
     verifyPhoneOtp,
   } = useAuth();
 
-  const [mode, setMode] =
-    useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>("login");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [fullName, setFullName] =
-    useState("");
+  const [fullName, setFullName] = useState("");
 
-  const [phone, setPhone] =
-    useState("");
+  const [phone, setPhone] = useState("");
 
-  const [otp, setOtp] =
-    useState("");
+  const [otp, setOtp] = useState("");
 
-  const [otpSent, setOtpSent] =
-    useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
-  const [isSeller, setIsSeller] =
-    useState(false);
+  const [isSeller, setIsSeller] = useState(false);
 
   const handleLogin = async () => {
 
     if (!email || !password) {
-      toast.error("Please fill all fields");
-      return;
-    }
 
-    try {
-
-      setLoading(true);
-
-      const response = await fetch(
-        "https://vurshcart.onrender.com/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-
-        localStorage.setItem(
-          "user",
-          JSON.stringify(data.user)
-        );
-
-        toast.success("Welcome Back");
-
-        navigate("/");
-
-      } else {
-
-        toast.error(data.message);
-
-      }
-
-    } catch {
-
-      toast.error("Login Failed");
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
-    const handleSignup = async () => {
-
-    if (!fullName.trim()) {
-      toast.error("Enter your full name");
-      return;
-    }
-
-    if (!email.trim()) {
-      toast.error("Enter your email");
-      return;
-    }
-
-    if (!password) {
-      toast.error("Enter password");
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password should be at least 6 characters");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    try {
-
-      setLoading(true);
-
-      const response = await fetch(
-        "https://vurshcart.onrender.com/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fullName,
-            email,
-            password,
-            seller: isSeller,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.success) {
-
-        toast.success(
-          "Account Created Successfully"
-        );
-
-        setMode("login");
-
-        setFullName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-
-      } else {
-
-        toast.error(data.message);
-
-      }
-
-    } catch {
-
-      toast.error(
-        "Registration Failed"
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
-
-  const handlePhoneLogin = async () => {
-
-    if (!otpSent) {
-
-      if (!phone.trim()) {
-
-        toast.error("Enter phone number");
-
-        return;
-
-      }
-
-      try {
-
-        setLoading(true);
-
-        await signInWithPhone(phone);
-
-        setOtpSent(true);
-
-        toast.success(
-          "OTP Sent Successfully"
-        );
-
-      } catch {
-
-        toast.error(
-          "Unable to send OTP"
-        );
-
-      } finally {
-
-        setLoading(false);
-
-      }
+      toast.error("Please enter email and password.");
 
       return;
 
@@ -247,19 +73,21 @@ export default function Auth() {
 
       setLoading(true);
 
-      await verifyPhoneOtp(otp);
+      // TODO:
+      // Replace with your backend API.
 
-      toast.success(
-        "Phone Verified"
-      );
+      console.log({
+        email,
+        password,
+      });
+
+      toast.success("Login Successful");
 
       navigate("/");
 
-    } catch {
+    } catch (error) {
 
-      toast.error(
-        "Invalid OTP"
-      );
+      toast.error("Unable to login.");
 
     } finally {
 
@@ -268,19 +96,27 @@ export default function Auth() {
     }
 
   };
+    return (
 
-  return (
+    <div className="relative h-screen w-screen overflow-hidden bg-black">
 
-    <div className="h-screen w-screen overflow-hidden bg-black">
+      {/* ========================= */}
+      {/* BACKGROUND */}
+      {/* ========================= */}
 
-      <div className="grid h-full w-full grid-cols-12">
+      <div className="absolute inset-0 bg-black" />
 
-        {/* LEFT SIDE */}
+      {/* ========================= */}
+      {/* MAIN GRID */}
+      {/* ========================= */}
 
-        <div className="relative col-span-7 overflow-hidden">
-                  {/* ========================================= */}
-        {/* PREMIUM LEFT HERO SECTION */}
-        {/* ========================================= */}
+      <div className="relative z-10 grid h-full w-full grid-cols-12">
+
+        {/* ===================================== */}
+        {/* LEFT HERO */}
+        {/* ===================================== */}
+
+        <section className="relative col-span-7 overflow-hidden">
 
           {/* Background Image */}
 
@@ -295,16 +131,17 @@ export default function Auth() {
               w-full
               object-cover
               grayscale
-              brightness-[0.38]
+              brightness-[0.30]
               contrast-125
+              select-none
             "
           />
 
           {/* Dark Overlay */}
 
-          <div className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-0 bg-black/55" />
 
-          {/* Luxury Gradient */}
+          {/* Gradient */}
 
           <div
             className="
@@ -312,27 +149,12 @@ export default function Auth() {
               inset-0
               bg-gradient-to-r
               from-black
-              via-black/70
+              via-black/60
               to-transparent
             "
           />
 
-          {/* Decorative Blur */}
-
-          <div
-            className="
-              absolute
-              -left-40
-              top-1/2
-              h-[600px]
-              w-[600px]
-              rounded-full
-              bg-white/5
-              blur-[120px]
-            "
-          />
-
-          {/* Main Content */}
+          {/* Content */}
 
           <div
             className="
@@ -342,21 +164,24 @@ export default function Auth() {
               h-full
               flex-col
               justify-between
-              p-20
+              px-24
+              py-20
             "
           >
 
-            {/* Logo */}
+            {/* ================= */}
+            {/* LOGO */}
+            {/* ================= */}
 
             <div>
 
               <h1
                 className="
-                  text-[92px]
-                  font-black
-                  tracking-[-8px]
+                  text-[140px]
+                  font-thin
+                  tracking-[-10px]
                   text-white
-                  select-none
+                  leading-none
                 "
               >
 
@@ -364,9 +189,23 @@ export default function Auth() {
 
               </h1>
 
-              <div
+              <h2
                 className="
                   mt-4
+                  text-5xl
+                  font-light
+                  tracking-[12px]
+                  text-white
+                "
+              >
+
+                VRUSHKART
+
+              </h2>
+
+              <div
+                className="
+                  mt-8
                   h-[2px]
                   w-28
                   rounded-full
@@ -375,14 +214,14 @@ export default function Auth() {
               />
 
             </div>
+                        {/* ========================== */}
+            {/* HERO CONTENT */}
+            {/* ========================== */}
 
-            {/* Hero Text */}
-
-            <div className="max-w-xl">
+            <div className="max-w-2xl">
 
               <p
                 className="
-                  mb-8
                   text-sm
                   uppercase
                   tracking-[12px]
@@ -390,102 +229,193 @@ export default function Auth() {
                 "
               >
 
-                PREMIUM AI MARKETPLACE
+                PREMIUM SHOPPING EXPERIENCE
 
               </p>
 
               <h2
                 className="
+                  mt-8
                   text-7xl
                   font-black
-                  leading-[82px]
+                  leading-[86px]
                   tracking-tight
                   text-white
                 "
               >
 
-                Shop
+                SHOP.
 
                 <br />
 
-                Smarter.
+                STYLE.
 
                 <br />
 
-                Live Better.
+                SAVE.
 
               </h2>
 
               <p
                 className="
                   mt-10
-                  max-w-lg
-                  text-lg
-                  leading-9
+                  max-w-xl
+                  text-xl
+                  leading-10
                   text-neutral-300
                 "
               >
 
-                India's premium AI-powered marketplace
-                delivering luxury shopping experiences,
-                trusted sellers, secure payments,
-                and lightning-fast delivery.
+                Experience India's premium marketplace
+                where quality products, trusted sellers,
+                lightning-fast delivery and secure payments
+                come together in one elegant destination.
 
               </p>
 
             </div>
 
-            {/* Bottom Statistics */}
+            {/* ========================== */}
+            {/* FEATURES */}
+            {/* ========================== */}
 
-            <div className="flex gap-14">
+            <div className="flex items-center gap-14">
 
-              <div>
+              <div className="flex flex-col items-center">
 
-                <h3 className="text-5xl font-bold text-white">
+                <div
+                  className="
+                    mb-5
+                    flex
+                    h-16
+                    w-16
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/15
+                    bg-white/[0.03]
+                  "
+                >
 
-                  500K+
+                  <ShieldCheck className="h-7 w-7 text-white"/>
 
-                </h3>
+                </div>
 
-                <p className="mt-3 text-neutral-400">
+                <p className="text-sm tracking-wide text-neutral-300">
 
-                  Happy Customers
+                  SECURE
+
+                </p>
+
+                <p className="text-sm tracking-wide text-neutral-300">
+
+                  PAYMENTS
 
                 </p>
 
               </div>
 
-              <div className="h-14 w-px bg-white/20" />
+              <div className="flex flex-col items-center">
 
-              <div>
+                <div
+                  className="
+                    mb-5
+                    flex
+                    h-16
+                    w-16
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/15
+                    bg-white/[0.03]
+                  "
+                >
 
-                <h3 className="text-5xl font-bold text-white">
+                  <Award className="h-7 w-7 text-white"/>
 
-                  25K+
+                </div>
 
-                </h3>
+                <p className="text-sm tracking-wide text-neutral-300">
 
-                <p className="mt-3 text-neutral-400">
+                  PREMIUM
 
-                  Premium Sellers
+                </p>
+
+                <p className="text-sm tracking-wide text-neutral-300">
+
+                  QUALITY
 
                 </p>
 
               </div>
 
-              <div className="h-14 w-px bg-white/20" />
+              <div className="flex flex-col items-center">
 
-              <div>
+                <div
+                  className="
+                    mb-5
+                    flex
+                    h-16
+                    w-16
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/15
+                    bg-white/[0.03]
+                  "
+                >
 
-                <h3 className="text-5xl font-bold text-white">
+                  <Truck className="h-7 w-7 text-white"/>
 
-                  4.9★
+                </div>
 
-                </h3>
+                <p className="text-sm tracking-wide text-neutral-300">
 
-                <p className="mt-3 text-neutral-400">
+                  FAST
 
-                  Customer Rating
+                </p>
+
+                <p className="text-sm tracking-wide text-neutral-300">
+
+                  DELIVERY
+
+                </p>
+
+              </div>
+
+              <div className="flex flex-col items-center">
+
+                <div
+                  className="
+                    mb-5
+                    flex
+                    h-16
+                    w-16
+                    items-center
+                    justify-center
+                    rounded-full
+                    border
+                    border-white/15
+                    bg-white/[0.03]
+                  "
+                >
+
+                  <Headphones className="h-7 w-7 text-white"/>
+
+                </div>
+
+                <p className="text-sm tracking-wide text-neutral-300">
+
+                  24/7
+
+                </p>
+
+                <p className="text-sm tracking-wide text-neutral-300">
+
+                  SUPPORT
 
                 </p>
 
@@ -495,70 +425,142 @@ export default function Auth() {
 
           </div>
 
-        </div>
-                {/* ========================================= */}
-        {/* RIGHT LOGIN PANEL */}
-        {/* ========================================= */}
+        </section>
 
-        <div className="col-span-5 flex items-center justify-center bg-[#050505]">
+        {/* ===================================== */}
+        {/* RIGHT LOGIN PANEL STARTS HERE */}
+        {/* ===================================== */}
+
+        <section
+          className="
+            col-span-5
+            flex
+            items-center
+            justify-center
+            bg-[#050505]
+          "
+        >
+                    {/* =============================== */}
+          {/* PREMIUM GLASS LOGIN CARD */}
+          {/* =============================== */}
 
           <div
             className="
               relative
-              w-[520px]
-              rounded-[36px]
+              w-[540px]
+              rounded-[34px]
               border
               border-white/10
-              bg-white/[0.04]
+              bg-white/[0.045]
               p-14
               backdrop-blur-3xl
-              shadow-[0_35px_120px_rgba(0,0,0,.85)]
+              shadow-[0_30px_120px_rgba(0,0,0,0.85)]
             "
           >
 
-            {/* Glow */}
+            {/* White Glow */}
+
+            <div
+              className="
+                pointer-events-none
+                absolute
+                inset-0
+                rounded-[34px]
+                border
+                border-white/5
+              "
+            />
+
+            {/* Small Blur */}
 
             <div
               className="
                 absolute
-                inset-0
-                rounded-[36px]
-                border
-                border-white/5
-                pointer-events-none
+                -right-20
+                -top-20
+                h-44
+                w-44
+                rounded-full
+                bg-white/5
+                blur-[90px]
               "
             />
 
-            {/* Header */}
+            {/* ===================== */}
+            {/* LOGO */}
+            {/* ===================== */}
 
             <div className="mb-10">
 
-              <p className="text-sm uppercase tracking-[8px] text-neutral-500">
+              <div
+                className="
+                  flex
+                  h-16
+                  w-16
+                  items-center
+                  justify-center
+                  rounded-2xl
+                  border
+                  border-white/10
+                  bg-white/5
+                "
+              >
 
-                Welcome
+                <span
+                  className="
+                    text-3xl
+                    font-light
+                    tracking-tight
+                    text-white
+                  "
+                >
 
-              </p>
+                  VK
 
-              <h2 className="mt-3 text-5xl font-black text-white">
+                </span>
 
-                {mode === "login"
-                  ? "Sign In"
-                  : "Create Account"}
-
-              </h2>
-
-              <p className="mt-4 text-neutral-400">
-
-                Continue your premium shopping experience.
-
-              </p>
+              </div>
 
             </div>
 
-            {/* Tabs */}
+            {/* ===================== */}
+            {/* TITLE */}
+            {/* ===================== */}
+
+            <h2
+              className="
+                text-5xl
+                font-black
+                tracking-tight
+                text-white
+              "
+            >
+
+              Welcome Back
+
+            </h2>
+
+            <p
+              className="
+                mt-4
+                text-lg
+                leading-8
+                text-neutral-400
+              "
+            >
+
+              Sign in to continue your premium
+              shopping experience.
+
+            </p>
+
+            {/* ===================== */}
+            {/* TABS */}
+            {/* ===================== */}
 
             <div
               className="
+                mt-12
                 mb-10
                 grid
                 grid-cols-2
@@ -569,52 +571,71 @@ export default function Auth() {
             >
 
               <button
-                onClick={() =>
-                  setMode("login")
-                }
-                className={`rounded-xl py-4 text-sm font-semibold transition-all duration-300 ${
-                  mode === "login"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-neutral-500 hover:text-white"
-                }`}
+                onClick={() => setMode("login")}
+                className={`
+                  rounded-xl
+                  py-4
+                  text-sm
+                  font-semibold
+                  transition-all
+                  duration-300
+
+                  ${
+                    mode === "login"
+                      ? "bg-white text-black"
+                      : "text-neutral-400 hover:text-white"
+                  }
+                `}
               >
 
-                Login
+                SIGN IN
 
               </button>
 
               <button
-                onClick={() =>
-                  setMode("signup")
-                }
-                className={`rounded-xl py-4 text-sm font-semibold transition-all duration-300 ${
-                  mode === "signup"
-                    ? "bg-white text-black shadow-lg"
-                    : "text-neutral-500 hover:text-white"
-                }`}
+                onClick={() => setMode("signup")}
+                className={`
+                  rounded-xl
+                  py-4
+                  text-sm
+                  font-semibold
+                  transition-all
+                  duration-300
+
+                  ${
+                    mode === "signup"
+                      ? "bg-white text-black"
+                      : "text-neutral-400 hover:text-white"
+                  }
+                `}
               >
 
-                Register
+                CREATE ACCOUNT
 
               </button>
 
             </div>
 
+            {/* ===================== */}
+            {/* LOGIN FORM */}
+            {/* ===================== */}
+
             {mode === "login" && (
 
               <>
-
+                              {/* ========================= */}
                 {/* EMAIL */}
+                {/* ========================= */}
 
-                <div className="mb-6">
+                <div className="mb-7">
 
-                  <Label className="mb-3 block text-neutral-300">
+                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
 
-                    EMAIL
+                    EMAIL ADDRESS
 
                   </Label>
 
-                  <div className="relative">
+                  <div className="group relative">
 
                     <Mail
                       className="
@@ -625,25 +646,32 @@ export default function Auth() {
                         h-5
                         w-5
                         text-neutral-500
+                        transition-all
+                        group-focus-within:text-white
                       "
                     />
 
                     <Input
+                      type="email"
                       value={email}
-                      onChange={(e)=>
-                        setEmail(e.target.value)
-                      }
-                      placeholder="Enter email"
+                      onChange={(e)=>setEmail(e.target.value)}
+                      placeholder="john@example.com"
                       className="
                         h-16
                         rounded-2xl
+                        border
                         border-white/10
                         bg-white/[0.04]
                         pl-14
-                        pr-4
+                        pr-5
+                        text-base
                         text-white
                         placeholder:text-neutral-500
+                        transition-all
+                        duration-300
                         focus:border-white
+                        focus:bg-white/[0.06]
+                        focus:ring-0
                       "
                     />
 
@@ -651,17 +679,36 @@ export default function Auth() {
 
                 </div>
 
+                {/* ========================= */}
                 {/* PASSWORD */}
+                {/* ========================= */}
 
-                <div className="mb-8">
+                <div className="mb-5">
 
-                  <Label className="mb-3 block text-neutral-300">
+                  <div className="mb-3 flex items-center justify-between">
 
-                    PASSWORD
+                    <Label className="text-sm tracking-[3px] text-neutral-300">
 
-                  </Label>
+                      PASSWORD
 
-                  <div className="relative">
+                    </Label>
+
+                    <button
+                      className="
+                        text-sm
+                        text-neutral-500
+                        transition-all
+                        hover:text-white
+                      "
+                    >
+
+                      Forgot Password?
+
+                    </button>
+
+                  </div>
+
+                  <div className="group relative">
 
                     <Lock
                       className="
@@ -672,6 +719,8 @@ export default function Auth() {
                         h-5
                         w-5
                         text-neutral-500
+                        transition-all
+                        group-focus-within:text-white
                       "
                     />
 
@@ -682,30 +731,30 @@ export default function Auth() {
                           : "password"
                       }
                       value={password}
-                      onChange={(e)=>
-                        setPassword(
-                          e.target.value
-                        )
-                      }
-                      placeholder="Password"
+                      onChange={(e)=>setPassword(e.target.value)}
+                      placeholder="Enter Password"
                       className="
                         h-16
                         rounded-2xl
+                        border
                         border-white/10
                         bg-white/[0.04]
                         pl-14
                         pr-14
                         text-white
                         placeholder:text-neutral-500
+                        transition-all
+                        duration-300
+                        focus:border-white
+                        focus:bg-white/[0.06]
+                        focus:ring-0
                       "
                     />
 
                     <button
                       type="button"
                       onClick={()=>
-                        setShowPassword(
-                          !showPassword
-                        )
+                        setShowPassword(!showPassword)
                       }
                       className="
                         absolute
@@ -713,6 +762,7 @@ export default function Auth() {
                         top-1/2
                         -translate-y-1/2
                         text-neutral-500
+                        transition-all
                         hover:text-white
                       "
                     >
@@ -732,7 +782,10 @@ export default function Auth() {
                   </div>
 
                 </div>
-                                {/* OPTIONS */}
+
+                {/* ========================= */}
+                {/* REMEMBER */}
+                {/* ========================= */}
 
                 <div className="mb-8 flex items-center justify-between">
 
@@ -751,22 +804,10 @@ export default function Auth() {
 
                   </label>
 
-                  <button
-                    className="
-                      text-sm
-                      text-neutral-400
-                      transition-all
-                      hover:text-white
-                    "
-                  >
-
-                    Forgot Password?
-
-                  </button>
-
                 </div>
-
-                {/* LOGIN BUTTON */}
+                                {/* ========================= */}
+                {/* SIGN IN BUTTON */}
+                {/* ========================= */}
 
                 <Button
                   onClick={handleLogin}
@@ -778,18 +819,19 @@ export default function Auth() {
                     rounded-2xl
                     bg-white
                     text-lg
-                    font-bold
+                    font-semibold
                     text-black
                     transition-all
                     duration-300
                     hover:scale-[1.02]
                     hover:bg-neutral-200
+                    active:scale-[0.99]
                   "
                 >
 
                   {loading ? (
 
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <Loader2 className="h-6 w-6 animate-spin"/>
 
                   ) : (
 
@@ -802,7 +844,7 @@ export default function Auth() {
                           ml-3
                           h-5
                           w-5
-                          transition-all
+                          transition-transform
                           duration-300
                           group-hover:translate-x-1
                         "
@@ -814,13 +856,15 @@ export default function Auth() {
 
                 </Button>
 
+                {/* ========================= */}
                 {/* DIVIDER */}
+                {/* ========================= */}
 
                 <div className="relative my-10">
 
                   <div className="absolute inset-0 flex items-center">
 
-                    <div className="w-full border-t border-white/10" />
+                    <div className="w-full border-t border-white/10"/>
 
                   </div>
 
@@ -829,9 +873,9 @@ export default function Auth() {
                     <span
                       className="
                         bg-[#050505]
-                        px-5
+                        px-6
                         text-xs
-                        tracking-[5px]
+                        tracking-[6px]
                         text-neutral-500
                       "
                     >
@@ -844,14 +888,16 @@ export default function Auth() {
 
                 </div>
 
+                {/* ========================= */}
                 {/* GOOGLE */}
+                {/* ========================= */}
 
                 <Button
-                  variant="outline"
                   onClick={signInWithGoogle}
+                  variant="outline"
                   className="
                     mb-4
-                    h-15
+                    h-16
                     w-full
                     justify-start
                     rounded-2xl
@@ -859,24 +905,29 @@ export default function Auth() {
                     bg-white/[0.03]
                     px-6
                     text-white
+                    transition-all
+                    duration-300
+                    hover:border-white/20
                     hover:bg-white/[0.08]
                   "
                 >
 
-                  <FcGoogle className="mr-4 text-xl" />
+                  <FcGoogle className="mr-4 text-2xl"/>
 
                   Continue with Google
 
                 </Button>
 
+                {/* ========================= */}
                 {/* APPLE */}
+                {/* ========================= */}
 
                 <Button
-                  variant="outline"
                   onClick={signInWithApple}
+                  variant="outline"
                   className="
                     mb-4
-                    h-15
+                    h-16
                     w-full
                     justify-start
                     rounded-2xl
@@ -884,24 +935,33 @@ export default function Auth() {
                     bg-white/[0.03]
                     px-6
                     text-white
+                    transition-all
+                    duration-300
+                    hover:border-white/20
                     hover:bg-white/[0.08]
                   "
                 >
 
-                  <FaApple className="mr-4 text-xl" />
+                  <FaApple className="mr-4 text-xl"/>
 
-Continue with Apple
+                  Continue with Apple
 
                 </Button>
 
+                {/* ========================= */}
                 {/* PHONE */}
+                {/* ========================= */}
 
                 <Button
+                  onClick={()=>{
+                    setPhone("");
+                    setOtp("");
+                    setOtpSent(false);
+                  }}
                   variant="outline"
-                  onClick={handlePhoneLogin}
                   className="
                     mb-4
-                    h-15
+                    h-16
                     w-full
                     justify-start
                     rounded-2xl
@@ -909,6 +969,9 @@ Continue with Apple
                     bg-white/[0.03]
                     px-6
                     text-white
+                    transition-all
+                    duration-300
+                    hover:border-white/20
                     hover:bg-white/[0.08]
                   "
                 >
@@ -919,30 +982,9 @@ Continue with Apple
 
                 </Button>
 
-                {/* EMAIL LINK */}
-
-                <Button
-                  variant="outline"
-                  className="
-                    h-15
-                    w-full
-                    justify-start
-                    rounded-2xl
-                    border-white/10
-                    bg-white/[0.03]
-                    px-6
-                    text-white
-                    hover:bg-white/[0.08]
-                  "
-                >
-
-                  <Mail className="mr-4 h-5 w-5"/>
-
-                  Continue with Email
-
-                </Button>
-
-                {/* FOOTER */}
+                {/* ========================= */}
+                {/* SIGNUP LINK */}
+                {/* ========================= */}
 
                 <div className="mt-10 text-center">
 
@@ -953,13 +995,12 @@ Continue with Apple
                   </span>
 
                   <button
-                    onClick={() =>
-                      setMode("signup")
-                    }
+                    onClick={() => setMode("signup")}
                     className="
                       ml-2
                       font-semibold
                       text-white
+                      transition-all
                       hover:text-neutral-300
                     "
                   >
@@ -973,9 +1014,9 @@ Continue with Apple
               </>
 
             )}
-                        {/* ========================= */}
+                        {/* ========================================= */}
             {/* SIGNUP FORM */}
-            {/* ========================= */}
+            {/* ========================================= */}
 
             {mode === "signup" && (
 
@@ -983,31 +1024,38 @@ Continue with Apple
 
                 <div className="mb-10">
 
-                  <p className="text-sm uppercase tracking-[8px] text-neutral-500">
-
-                    Join VrushKart
-
-                  </p>
-
-                  <h2 className="mt-3 text-5xl font-black text-white">
+                  <h2
+                    className="
+                      text-5xl
+                      font-black
+                      tracking-tight
+                      text-white
+                    "
+                  >
 
                     Create Account
 
                   </h2>
 
-                  <p className="mt-4 text-neutral-400">
+                  <p
+                    className="
+                      mt-4
+                      text-lg
+                      text-neutral-400
+                    "
+                  >
 
-                    Start your premium shopping journey.
+                    Join VrushKart and start shopping.
 
                   </p>
 
                 </div>
 
-                {/* NAME */}
+                {/* FULL NAME */}
 
                 <div className="mb-6">
 
-                  <Label className="mb-3 block text-neutral-300">
+                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
 
                     FULL NAME
 
@@ -1029,9 +1077,7 @@ Continue with Apple
 
                     <Input
                       value={fullName}
-                      onChange={(e)=>
-                        setFullName(e.target.value)
-                      }
+                      onChange={(e)=>setFullName(e.target.value)}
                       placeholder="John Doe"
                       className="
                         h-16
@@ -1040,7 +1086,6 @@ Continue with Apple
                         bg-white/[0.04]
                         pl-14
                         text-white
-                        placeholder:text-neutral-500
                       "
                     />
 
@@ -1052,7 +1097,7 @@ Continue with Apple
 
                 <div className="mb-6">
 
-                  <Label className="mb-3 block text-neutral-300">
+                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
 
                     EMAIL ADDRESS
 
@@ -1074,9 +1119,7 @@ Continue with Apple
 
                     <Input
                       value={email}
-                      onChange={(e)=>
-                        setEmail(e.target.value)
-                      }
+                      onChange={(e)=>setEmail(e.target.value)}
                       placeholder="john@gmail.com"
                       className="
                         h-16
@@ -1096,9 +1139,80 @@ Continue with Apple
 
                 <div className="mb-6">
 
-                  <Label className="mb-3 block text-neutral-300">
+                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
 
                     PASSWORD
+
+                  </Label>
+
+                  <div className="relative">
+
+                    <Lock
+                      className="
+                        absolute
+                        left-5
+                        top-1/2
+                        -translate-y-1/2
+                        h-5
+                        w-5
+                        text-neutral-500
+                      "
+                    />
+
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e)=>setPassword(e.target.value)}
+                      placeholder="Password"
+                      className="
+                        h-16
+                        rounded-2xl
+                        border-white/10
+                        bg-white/[0.04]
+                        pl-14
+                        pr-14
+                        text-white
+                      "
+                    />
+
+                    <button
+                      type="button"
+                      onClick={()=>setShowPassword(!showPassword)}
+                      className="
+                        absolute
+                        right-5
+                        top-1/2
+                        -translate-y-1/2
+                        text-neutral-500
+                      "
+                    >
+
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5"/>
+                      ) : (
+                        <Eye className="h-5 w-5"/>
+                      )}
+
+                    </button>
+
+                  </div>
+
+                </div>
+                                {/* CONFIRM PASSWORD */}
+
+                <div className="mb-6">
+
+                  <Label
+                    className="
+                      mb-3
+                      block
+                      text-sm
+                      tracking-[3px]
+                      text-neutral-300
+                    "
+                  >
+
+                    CONFIRM PASSWORD
 
                   </Label>
 
@@ -1122,126 +1236,102 @@ Continue with Apple
                           ? "text"
                           : "password"
                       }
-                      value={password}
+                      value={confirmPassword}
                       onChange={(e)=>
-                        setPassword(e.target.value)
+                        setConfirmPassword(
+                          e.target.value
+                        )
                       }
-                      placeholder="Password"
+                      placeholder="Confirm Password"
                       className="
                         h-16
                         rounded-2xl
+                        border
                         border-white/10
                         bg-white/[0.04]
                         pl-14
-                        pr-14
+                        pr-5
                         text-white
+                        placeholder:text-neutral-500
+                        focus:border-white
+                        focus:ring-0
                       "
                     />
 
-                    <button
-                      type="button"
-                      onClick={()=>
-                        setShowPassword(!showPassword)
+                  </div>
+
+                </div>
+
+                {/* SELLER */}
+
+                <div className="mb-8">
+
+                  <label
+                    className="
+                      flex
+                      cursor-pointer
+                      items-center
+                      gap-4
+                      rounded-2xl
+                      border
+                      border-white/10
+                      bg-white/[0.03]
+                      p-5
+                      transition-all
+                      duration-300
+                      hover:bg-white/[0.06]
+                    "
+                  >
+
+                    <input
+                      type="checkbox"
+                      checked={isSeller}
+                      onChange={(e)=>
+                        setIsSeller(
+                          e.target.checked
+                        )
                       }
                       className="
-                        absolute
-                        right-5
-                        top-1/2
-                        -translate-y-1/2
+                        h-5
+                        w-5
+                        accent-white
                       "
-                    >
+                    />
 
-                      {showPassword ? (
+                    <div>
 
-                        <EyeOff className="h-5 w-5 text-neutral-400"/>
+                      <h3
+                        className="
+                          text-base
+                          font-semibold
+                          text-white
+                        "
+                      >
 
-                      ) : (
+                        Register as Seller
 
-                        <Eye className="h-5 w-5 text-neutral-400"/>
+                      </h3>
 
-                      )}
+                      <p
+                        className="
+                          mt-1
+                          text-sm
+                          leading-6
+                          text-neutral-400
+                        "
+                      >
 
-                    </button>
+                        Open your own premium
+                        VrushKart store and
+                        start selling online.
 
-                  </div>
+                      </p>
 
-                </div>
+                    </div>
 
-                {/* CONFIRM PASSWORD */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-3 block text-neutral-300">
-
-                    CONFIRM PASSWORD
-
-                  </Label>
-
-                  <Input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e)=>
-                      setConfirmPassword(e.target.value)
-                    }
-                    placeholder="Confirm Password"
-                    className="
-                      h-16
-                      rounded-2xl
-                      border-white/10
-                      bg-white/[0.04]
-                      text-white
-                    "
-                  />
+                  </label>
 
                 </div>
-                                {/* SELLER OPTION */}
-
-                <label
-                  className="
-                    mb-8
-                    flex
-                    cursor-pointer
-                    items-center
-                    gap-5
-                    rounded-2xl
-                    border
-                    border-white/10
-                    bg-white/[0.03]
-                    p-6
-                    transition-all
-                    duration-300
-                    hover:border-white/20
-                    hover:bg-white/[0.05]
-                  "
-                >
-
-                  <input
-                    type="checkbox"
-                    checked={isSeller}
-                    onChange={(e)=>
-                      setIsSeller(e.target.checked)
-                    }
-                    className="h-5 w-5 accent-white"
-                  />
-
-                  <div>
-
-                    <h3 className="text-lg font-semibold text-white">
-
-                      Register as Seller
-
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-6 text-neutral-400">
-
-                      Create your own premium store and
-                      start selling products across India.
-
-                    </p>
-
-                  </div>
-
-                </label>
 
                 {/* CREATE ACCOUNT */}
 
@@ -1255,7 +1345,7 @@ Continue with Apple
                     rounded-2xl
                     bg-white
                     text-lg
-                    font-bold
+                    font-semibold
                     text-black
                     transition-all
                     duration-300
@@ -1266,7 +1356,13 @@ Continue with Apple
 
                   {loading ? (
 
-                    <Loader2 className="h-6 w-6 animate-spin"/>
+                    <Loader2
+                      className="
+                        h-6
+                        w-6
+                        animate-spin
+                      "
+                    />
 
                   ) : (
 
@@ -1279,8 +1375,7 @@ Continue with Apple
                           ml-3
                           h-5
                           w-5
-                          transition-all
-                          duration-300
+                          transition-transform
                           group-hover:translate-x-1
                         "
                       />
@@ -1306,9 +1401,9 @@ Continue with Apple
                     <span
                       className="
                         bg-[#050505]
-                        px-5
+                        px-6
                         text-xs
-                        tracking-[5px]
+                        tracking-[6px]
                         text-neutral-500
                       "
                     >
@@ -1320,27 +1415,30 @@ Continue with Apple
                   </div>
 
                 </div>
-
-                {/* GOOGLE */}
+                                {/* GOOGLE */}
 
                 <Button
                   onClick={signInWithGoogle}
                   variant="outline"
                   className="
                     mb-4
-                    h-15
+                    h-16
                     w-full
                     justify-start
                     rounded-2xl
+                    border
                     border-white/10
                     bg-white/[0.03]
                     px-6
                     text-white
+                    transition-all
+                    duration-300
+                    hover:border-white/20
                     hover:bg-white/[0.08]
                   "
                 >
 
-                  <FcGoogle className="mr-4 text-xl" />
+                  <FcGoogle className="mr-4 text-2xl"/>
 
                   Continue with Google
 
@@ -1353,19 +1451,23 @@ Continue with Apple
                   variant="outline"
                   className="
                     mb-4
-                    h-15
+                    h-16
                     w-full
                     justify-start
                     rounded-2xl
+                    border
                     border-white/10
                     bg-white/[0.03]
                     px-6
                     text-white
+                    transition-all
+                    duration-300
+                    hover:border-white/20
                     hover:bg-white/[0.08]
                   "
                 >
 
-                  <FaApple className="mr-4 text-xl" />
+                  <FaApple className="mr-4 text-2xl"/>
 
                   Continue with Apple
 
@@ -1374,21 +1476,29 @@ Continue with Apple
                 {/* PHONE */}
 
                 <Button
-                  onClick={()=>{
-                    setMode("login");
-                  }}
                   variant="outline"
                   className="
-                    h-15
+                    mb-4
+                    h-16
                     w-full
                     justify-start
                     rounded-2xl
+                    border
                     border-white/10
                     bg-white/[0.03]
                     px-6
                     text-white
+                    transition-all
+                    duration-300
+                    hover:border-white/20
                     hover:bg-white/[0.08]
                   "
+                  onClick={()=>{
+                    setMode("login");
+                    setPhone("");
+                    setOtp("");
+                    setOtpSent(false);
+                  }}
                 >
 
                   <Phone className="mr-4 h-5 w-5"/>
@@ -1397,7 +1507,7 @@ Continue with Apple
 
                 </Button>
 
-                {/* LOGIN */}
+                {/* LOGIN LINK */}
 
                 <div className="mt-10 text-center">
 
@@ -1408,18 +1518,20 @@ Continue with Apple
                   </span>
 
                   <button
-                    onClick={()=>
+                    onClick={() =>
                       setMode("login")
                     }
                     className="
                       ml-2
                       font-semibold
                       text-white
+                      transition-all
+                      duration-300
                       hover:text-neutral-300
                     "
                   >
 
-                    Login
+                    Sign In
 
                   </button>
 
@@ -1431,17 +1543,41 @@ Continue with Apple
 
           </div>
 
-        </div>
+        </section>
 
       </div>
 
       {/* TOP SHADOW */}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black via-black/80 to-transparent"/>
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-x-0
+          top-0
+          h-40
+          bg-gradient-to-b
+          from-black
+          via-black/80
+          to-transparent
+        "
+      />
 
       {/* BOTTOM SHADOW */}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/80 to-transparent"/>
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-x-0
+          bottom-0
+          h-40
+          bg-gradient-to-t
+          from-black
+          via-black/80
+          to-transparent
+        "
+      />
 
       {/* BACKGROUND ANIMATION */}
 
@@ -1449,23 +1585,19 @@ Continue with Apple
 
       @keyframes heroZoom{
 
-        from{
-
+        0%{
           transform:scale(1);
-
         }
 
-        to{
-
+        100%{
           transform:scale(1.08);
-
         }
 
       }
 
       .hero-image{
 
-        animation:heroZoom 20s ease-in-out infinite alternate;
+        animation:heroZoom 18s ease-in-out infinite alternate;
 
       }
 
