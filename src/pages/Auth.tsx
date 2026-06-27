@@ -993,7 +993,6 @@ export default function Auth() {
                   </div>
 
                   <div className="relative">
-                                      <div className="relative">
 
                     <Lock
                       className="
