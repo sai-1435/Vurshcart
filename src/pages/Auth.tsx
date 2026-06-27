@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   Mail,
   Lock,
   Eye,
   EyeOff,
-  ArrowRight,
-  Loader2,
   Phone,
   User,
+  Loader2,
+  ArrowRight,
   ShieldCheck,
+  Award,
   Truck,
   Headphones,
-  Award,
 } from "lucide-react";
 
 import { FcGoogle } from "react-icons/fc";
@@ -23,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+
+const API = "https://vrushcart.onrender.com";
 
 type AuthMode = "login" | "signup";
 
@@ -59,11 +62,23 @@ export default function Auth() {
 
   const [isSeller, setIsSeller] = useState(false);
 
+  /* ============================= */
+  /* LOGIN */
+  /* ============================= */
+
   const handleLogin = async () => {
 
-    if (!email || !password) {
+    if (!email.trim()) {
 
-      toast.error("Please enter email and password.");
+      toast.error("Enter your email");
+
+      return;
+
+    }
+
+    if (!password.trim()) {
+
+      toast.error("Enter your password");
 
       return;
 
@@ -73,21 +88,46 @@ export default function Auth() {
 
       setLoading(true);
 
-      // TODO:
-      // Replace with your backend API.
-
-      console.log({
-        email,
-        password,
+      const response = await fetch(`${API}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+                body: JSON.stringify({
+          email,
+          password,
+        }),
       });
 
-      toast.success("Login Successful");
+      const data = await response.json();
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message || "Login failed"
+        );
+
+      }
+
+      toast.success("Welcome Back");
+
+      localStorage.setItem(
+        "vrushkart-user",
+        JSON.stringify(data.user)
+      );
+
+      localStorage.setItem(
+        "vrushkart-token",
+        data.token
+      );
 
       navigate("/");
 
-    } catch (error) {
+    } catch (error: any) {
 
-      toast.error("Unable to login.");
+      toast.error(
+        error.message || "Unable to login."
+      );
 
     } finally {
 
@@ -96,29 +136,238 @@ export default function Auth() {
     }
 
   };
-    return (
+
+  /* ============================= */
+  /* SIGNUP */
+  /* ============================= */
+
+  const handleSignup = async () => {
+
+    if (!fullName.trim()) {
+
+      toast.error("Enter your full name");
+
+      return;
+
+    }
+
+    if (!email.trim()) {
+
+      toast.error("Enter your email");
+
+      return;
+
+    }
+
+    if (!password.trim()) {
+
+      toast.error("Enter your password");
+
+      return;
+
+    }
+
+    if (password !== confirmPassword) {
+
+      toast.error("Passwords do not match");
+
+      return;
+
+    }
+
+    try {
+
+      setLoading(true);
+
+      const response = await fetch(
+        `${API}/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+
+            fullName,
+
+            email,
+
+            password,
+
+            role: isSeller
+              ? "seller"
+              : "customer",
+
+          }),
+
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message || "Signup Failed"
+        );
+
+      }
+
+      toast.success(
+        "Account Created Successfully"
+      );
+            localStorage.setItem(
+        "vrushkart-user",
+        JSON.stringify(data.user)
+      );
+
+      localStorage.setItem(
+        "vrushkart-token",
+        data.token
+      );
+
+      setMode("login");
+
+      setFullName("");
+
+      setEmail("");
+
+      setPassword("");
+
+      setConfirmPassword("");
+
+      setPhone("");
+
+      setOtp("");
+
+      setOtpSent(false);
+
+      toast.success(
+        "Please login to continue."
+      );
+
+    } catch (error: any) {
+
+      toast.error(
+        error.message || "Unable to create account."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  /* ============================= */
+  /* PHONE LOGIN */
+  /* ============================= */
+
+  const handlePhoneLogin = async () => {
+
+    if (!phone.trim()) {
+
+      toast.error("Enter your phone number");
+
+      return;
+
+    }
+
+    try {
+
+      setLoading(true);
+
+      await signInWithPhone(phone);
+
+      setOtpSent(true);
+
+      toast.success(
+        "OTP Sent Successfully"
+      );
+
+    } catch (error: any) {
+
+      toast.error(
+        error.message || "Unable to send OTP."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  /* ============================= */
+  /* VERIFY OTP */
+  /* ============================= */
+
+  const handleVerifyOtp = async () => {
+
+    if (!otp.trim()) {
+
+      toast.error("Enter OTP");
+
+      return;
+
+    }
+
+    try {
+
+      setLoading(true);
+
+      await verifyPhoneOtp(otp);
+
+      toast.success(
+        "Phone Login Successful"
+      );
+
+      navigate("/");
+
+    } catch (error: any) {
+
+      toast.error(
+        error.message || "Invalid OTP"
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  /* ============================= */
+  /* UI */
+  /* ============================= */
+
+  return (
 
     <div className="relative h-screen w-screen overflow-hidden bg-black">
 
-      {/* ========================= */}
       {/* BACKGROUND */}
-      {/* ========================= */}
 
       <div className="absolute inset-0 bg-black" />
 
-      {/* ========================= */}
       {/* MAIN GRID */}
-      {/* ========================= */}
 
       <div className="relative z-10 grid h-full w-full grid-cols-12">
+                {/* =============================== */}
+        {/* LEFT SIDE */}
+        {/* =============================== */}
 
-        {/* ===================================== */}
-        {/* LEFT HERO */}
-        {/* ===================================== */}
+        <section
+          className="
+            relative
+            col-span-7
+            overflow-hidden
+          "
+        >
 
-        <section className="relative col-span-7 overflow-hidden">
-
-          {/* Background Image */}
+          {/* HERO IMAGE */}
 
           <img
             src="/images/auth-bg.jpg"
@@ -131,17 +380,18 @@ export default function Auth() {
               w-full
               object-cover
               grayscale
-              brightness-[0.30]
+              brightness-[0.22]
               contrast-125
+              scale-105
               select-none
             "
           />
 
-          {/* Dark Overlay */}
+          {/* DARK OVERLAY */}
 
-          <div className="absolute inset-0 bg-black/55" />
+          <div className="absolute inset-0 bg-black/60"/>
 
-          {/* Gradient */}
+          {/* LEFT GRADIENT */}
 
           <div
             className="
@@ -154,7 +404,7 @@ export default function Auth() {
             "
           />
 
-          {/* Content */}
+          {/* CONTENT */}
 
           <div
             className="
@@ -169,19 +419,17 @@ export default function Auth() {
             "
           >
 
-            {/* ================= */}
             {/* LOGO */}
-            {/* ================= */}
 
             <div>
 
               <h1
                 className="
-                  text-[140px]
-                  font-thin
-                  tracking-[-10px]
-                  text-white
+                  text-[170px]
+                  font-extralight
                   leading-none
+                  tracking-[-12px]
+                  text-white
                 "
               >
 
@@ -191,10 +439,10 @@ export default function Auth() {
 
               <h2
                 className="
-                  mt-4
+                  mt-2
                   text-5xl
                   font-light
-                  tracking-[12px]
+                  tracking-[16px]
                   text-white
                 "
               >
@@ -214,9 +462,8 @@ export default function Auth() {
               />
 
             </div>
-                        {/* ========================== */}
-            {/* HERO CONTENT */}
-            {/* ========================== */}
+
+            {/* CENTER CONTENT */}
 
             <div className="max-w-2xl">
 
@@ -229,7 +476,7 @@ export default function Auth() {
                 "
               >
 
-                PREMIUM SHOPPING EXPERIENCE
+                PREMIUM MARKETPLACE
 
               </p>
 
@@ -238,21 +485,20 @@ export default function Auth() {
                   mt-8
                   text-7xl
                   font-black
-                  leading-[86px]
-                  tracking-tight
+                  leading-[82px]
                   text-white
                 "
               >
 
-                SHOP.
+                Luxury.
 
                 <br />
 
-                STYLE.
+                Shopping.
 
                 <br />
 
-                SAVE.
+                Redefined.
 
               </h2>
 
@@ -266,20 +512,19 @@ export default function Auth() {
                 "
               >
 
-                Experience India's premium marketplace
-                where quality products, trusted sellers,
-                lightning-fast delivery and secure payments
-                come together in one elegant destination.
+                Experience premium fashion,
+                electronics, lifestyle products
+                and trusted sellers with a
+                modern shopping experience.
 
               </p>
 
             </div>
-
-            {/* ========================== */}
+                        {/* =============================== */}
             {/* FEATURES */}
-            {/* ========================== */}
+            {/* =============================== */}
 
-            <div className="flex items-center gap-14">
+            <div className="flex items-center gap-12">
 
               <div className="flex flex-col items-center">
 
@@ -293,8 +538,9 @@ export default function Auth() {
                     justify-center
                     rounded-full
                     border
-                    border-white/15
-                    bg-white/[0.03]
+                    border-white/10
+                    bg-white/[0.04]
+                    backdrop-blur-md
                   "
                 >
 
@@ -302,15 +548,28 @@ export default function Auth() {
 
                 </div>
 
-                <p className="text-sm tracking-wide text-neutral-300">
+                <h4
+                  className="
+                    text-sm
+                    font-semibold
+                    tracking-[2px]
+                    text-white
+                  "
+                >
 
                   SECURE
 
-                </p>
+                </h4>
 
-                <p className="text-sm tracking-wide text-neutral-300">
+                <p
+                  className="
+                    mt-2
+                    text-xs
+                    text-neutral-400
+                  "
+                >
 
-                  PAYMENTS
+                  Payments
 
                 </p>
 
@@ -328,8 +587,9 @@ export default function Auth() {
                     justify-center
                     rounded-full
                     border
-                    border-white/15
-                    bg-white/[0.03]
+                    border-white/10
+                    bg-white/[0.04]
+                    backdrop-blur-md
                   "
                 >
 
@@ -337,15 +597,28 @@ export default function Auth() {
 
                 </div>
 
-                <p className="text-sm tracking-wide text-neutral-300">
+                <h4
+                  className="
+                    text-sm
+                    font-semibold
+                    tracking-[2px]
+                    text-white
+                  "
+                >
 
                   PREMIUM
 
-                </p>
+                </h4>
 
-                <p className="text-sm tracking-wide text-neutral-300">
+                <p
+                  className="
+                    mt-2
+                    text-xs
+                    text-neutral-400
+                  "
+                >
 
-                  QUALITY
+                  Products
 
                 </p>
 
@@ -363,8 +636,9 @@ export default function Auth() {
                     justify-center
                     rounded-full
                     border
-                    border-white/15
-                    bg-white/[0.03]
+                    border-white/10
+                    bg-white/[0.04]
+                    backdrop-blur-md
                   "
                 >
 
@@ -372,15 +646,28 @@ export default function Auth() {
 
                 </div>
 
-                <p className="text-sm tracking-wide text-neutral-300">
+                <h4
+                  className="
+                    text-sm
+                    font-semibold
+                    tracking-[2px]
+                    text-white
+                  "
+                >
 
                   FAST
 
-                </p>
+                </h4>
 
-                <p className="text-sm tracking-wide text-neutral-300">
+                <p
+                  className="
+                    mt-2
+                    text-xs
+                    text-neutral-400
+                  "
+                >
 
-                  DELIVERY
+                  Delivery
 
                 </p>
 
@@ -398,8 +685,9 @@ export default function Auth() {
                     justify-center
                     rounded-full
                     border
-                    border-white/15
-                    bg-white/[0.03]
+                    border-white/10
+                    bg-white/[0.04]
+                    backdrop-blur-md
                   "
                 >
 
@@ -407,15 +695,28 @@ export default function Auth() {
 
                 </div>
 
-                <p className="text-sm tracking-wide text-neutral-300">
-
-                  24/7
-
-                </p>
-
-                <p className="text-sm tracking-wide text-neutral-300">
+                <h4
+                  className="
+                    text-sm
+                    font-semibold
+                    tracking-[2px]
+                    text-white
+                  "
+                >
 
                   SUPPORT
+
+                </h4>
+
+                <p
+                  className="
+                    mt-2
+                    text-xs
+                    text-neutral-400
+                  "
+                >
+
+                  24 × 7
 
                 </p>
 
@@ -427,9 +728,9 @@ export default function Auth() {
 
         </section>
 
-        {/* ===================================== */}
-        {/* RIGHT LOGIN PANEL STARTS HERE */}
-        {/* ===================================== */}
+        {/* =============================== */}
+        {/* RIGHT SIDE */}
+        {/* =============================== */}
 
         <section
           className="
@@ -437,95 +738,69 @@ export default function Auth() {
             flex
             items-center
             justify-center
-            bg-[#050505]
+            bg-[#040404]
           "
         >
-                    {/* =============================== */}
-          {/* PREMIUM GLASS LOGIN CARD */}
-          {/* =============================== */}
+
+          {/* GLASS CARD */}
 
           <div
             className="
               relative
               w-[540px]
-              rounded-[34px]
+              rounded-[36px]
               border
               border-white/10
-              bg-white/[0.045]
+              bg-white/[0.05]
               p-14
               backdrop-blur-3xl
-              shadow-[0_30px_120px_rgba(0,0,0,0.85)]
+              shadow-[0_40px_120px_rgba(0,0,0,0.85)]
             "
           >
 
-            {/* White Glow */}
+            {/* Glow */}
 
             <div
               className="
-                pointer-events-none
                 absolute
                 inset-0
-                rounded-[34px]
+                rounded-[36px]
                 border
                 border-white/5
+                pointer-events-none
               "
             />
 
-            {/* Small Blur */}
+            {/* Logo */}
 
             <div
               className="
-                absolute
-                -right-20
-                -top-20
-                h-44
-                w-44
-                rounded-full
-                bg-white/5
-                blur-[90px]
+                mb-10
+                flex
+                h-16
+                w-16
+                items-center
+                justify-center
+                rounded-2xl
+                border
+                border-white/10
+                bg-white/[0.05]
               "
-            />
+            >
 
-            {/* ===================== */}
-            {/* LOGO */}
-            {/* ===================== */}
-
-            <div className="mb-10">
-
-              <div
+              <span
                 className="
-                  flex
-                  h-16
-                  w-16
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  border
-                  border-white/10
-                  bg-white/5
+                  text-3xl
+                  font-light
+                  text-white
                 "
               >
 
-                <span
-                  className="
-                    text-3xl
-                    font-light
-                    tracking-tight
-                    text-white
-                  "
-                >
+                VK
 
-                  VK
-
-                </span>
-
-              </div>
+              </span>
 
             </div>
-
-            {/* ===================== */}
-            {/* TITLE */}
-            {/* ===================== */}
 
             <h2
               className="
@@ -549,14 +824,13 @@ export default function Auth() {
               "
             >
 
-              Sign in to continue your premium
-              shopping experience.
+              Sign in to continue your
+              premium shopping experience.
 
             </p>
-
-            {/* ===================== */}
-            {/* TABS */}
-            {/* ===================== */}
+                        {/* =============================== */}
+            {/* LOGIN / SIGNUP TABS */}
+            {/* =============================== */}
 
             <div
               className="
@@ -565,7 +839,7 @@ export default function Auth() {
                 grid
                 grid-cols-2
                 rounded-2xl
-                bg-white/[0.05]
+                bg-white/[0.04]
                 p-1
               "
             >
@@ -573,18 +847,20 @@ export default function Auth() {
               <button
                 onClick={() => setMode("login")}
                 className={`
-                  rounded-xl
+                  rounded-2xl
                   py-4
                   text-sm
                   font-semibold
+                  tracking-[2px]
                   transition-all
                   duration-300
 
                   ${
                     mode === "login"
-                      ? "bg-white text-black"
+                      ? "bg-white text-black shadow-lg"
                       : "text-neutral-400 hover:text-white"
                   }
+
                 `}
               >
 
@@ -595,18 +871,20 @@ export default function Auth() {
               <button
                 onClick={() => setMode("signup")}
                 className={`
-                  rounded-xl
+                  rounded-2xl
                   py-4
                   text-sm
                   font-semibold
+                  tracking-[2px]
                   transition-all
                   duration-300
 
                   ${
                     mode === "signup"
-                      ? "bg-white text-black"
+                      ? "bg-white text-black shadow-lg"
                       : "text-neutral-400 hover:text-white"
                   }
+
                 `}
               >
 
@@ -616,26 +894,33 @@ export default function Auth() {
 
             </div>
 
-            {/* ===================== */}
+            {/* ================================= */}
             {/* LOGIN FORM */}
-            {/* ===================== */}
+            {/* ================================= */}
 
             {mode === "login" && (
 
               <>
-                              {/* ========================= */}
+
                 {/* EMAIL */}
-                {/* ========================= */}
 
-                <div className="mb-7">
+                <div className="mb-6">
 
-                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
+                  <Label
+                    className="
+                      mb-3
+                      block
+                      text-sm
+                      tracking-[3px]
+                      text-neutral-300
+                    "
+                  >
 
                     EMAIL ADDRESS
 
                   </Label>
 
-                  <div className="group relative">
+                  <div className="relative">
 
                     <Mail
                       className="
@@ -646,15 +931,15 @@ export default function Auth() {
                         h-5
                         w-5
                         text-neutral-500
-                        transition-all
-                        group-focus-within:text-white
                       "
                     />
 
                     <Input
-                      type="email"
                       value={email}
-                      onChange={(e)=>setEmail(e.target.value)}
+                      type="email"
+                      onChange={(e)=>
+                        setEmail(e.target.value)
+                      }
                       placeholder="john@example.com"
                       className="
                         h-16
@@ -664,13 +949,9 @@ export default function Auth() {
                         bg-white/[0.04]
                         pl-14
                         pr-5
-                        text-base
                         text-white
                         placeholder:text-neutral-500
-                        transition-all
-                        duration-300
                         focus:border-white
-                        focus:bg-white/[0.06]
                         focus:ring-0
                       "
                     />
@@ -679,15 +960,19 @@ export default function Auth() {
 
                 </div>
 
-                {/* ========================= */}
                 {/* PASSWORD */}
-                {/* ========================= */}
 
-                <div className="mb-5">
+                <div className="mb-4">
 
                   <div className="mb-3 flex items-center justify-between">
 
-                    <Label className="text-sm tracking-[3px] text-neutral-300">
+                    <Label
+                      className="
+                        text-sm
+                        tracking-[3px]
+                        text-neutral-300
+                      "
+                    >
 
                       PASSWORD
 
@@ -697,7 +982,6 @@ export default function Auth() {
                       className="
                         text-sm
                         text-neutral-500
-                        transition-all
                         hover:text-white
                       "
                     >
@@ -708,7 +992,8 @@ export default function Auth() {
 
                   </div>
 
-                  <div className="group relative">
+                  <div className="relative">
+                                      <div className="relative">
 
                     <Lock
                       className="
@@ -719,8 +1004,6 @@ export default function Auth() {
                         h-5
                         w-5
                         text-neutral-500
-                        transition-all
-                        group-focus-within:text-white
                       "
                     />
 
@@ -731,7 +1014,9 @@ export default function Auth() {
                           : "password"
                       }
                       value={password}
-                      onChange={(e)=>setPassword(e.target.value)}
+                      onChange={(e)=>
+                        setPassword(e.target.value)
+                      }
                       placeholder="Enter Password"
                       className="
                         h-16
@@ -743,10 +1028,7 @@ export default function Auth() {
                         pr-14
                         text-white
                         placeholder:text-neutral-500
-                        transition-all
-                        duration-300
                         focus:border-white
-                        focus:bg-white/[0.06]
                         focus:ring-0
                       "
                     />
@@ -762,8 +1044,8 @@ export default function Auth() {
                         top-1/2
                         -translate-y-1/2
                         text-neutral-500
-                        transition-all
                         hover:text-white
+                        transition-all
                       "
                     >
 
@@ -783,9 +1065,7 @@ export default function Auth() {
 
                 </div>
 
-                {/* ========================= */}
                 {/* REMEMBER */}
-                {/* ========================= */}
 
                 <div className="mb-8 flex items-center justify-between">
 
@@ -805,9 +1085,8 @@ export default function Auth() {
                   </label>
 
                 </div>
-                                {/* ========================= */}
-                {/* SIGN IN BUTTON */}
-                {/* ========================= */}
+
+                {/* SIGN IN */}
 
                 <Button
                   onClick={handleLogin}
@@ -825,7 +1104,6 @@ export default function Auth() {
                     duration-300
                     hover:scale-[1.02]
                     hover:bg-neutral-200
-                    active:scale-[0.99]
                   "
                 >
 
@@ -844,7 +1122,7 @@ export default function Auth() {
                           ml-3
                           h-5
                           w-5
-                          transition-transform
+                          transition-all
                           duration-300
                           group-hover:translate-x-1
                         "
@@ -856,9 +1134,7 @@ export default function Auth() {
 
                 </Button>
 
-                {/* ========================= */}
                 {/* DIVIDER */}
-                {/* ========================= */}
 
                 <div className="relative my-10">
 
@@ -872,7 +1148,7 @@ export default function Auth() {
 
                     <span
                       className="
-                        bg-[#050505]
+                        bg-[#040404]
                         px-6
                         text-xs
                         tracking-[6px]
@@ -880,17 +1156,14 @@ export default function Auth() {
                       "
                     >
 
-                      CONTINUE WITH
+                      OR CONTINUE WITH
 
                     </span>
 
                   </div>
 
                 </div>
-
-                {/* ========================= */}
-                {/* GOOGLE */}
-                {/* ========================= */}
+                                {/* GOOGLE */}
 
                 <Button
                   onClick={signInWithGoogle}
@@ -901,8 +1174,9 @@ export default function Auth() {
                     w-full
                     justify-start
                     rounded-2xl
+                    border
                     border-white/10
-                    bg-white/[0.03]
+                    bg-white/[0.04]
                     px-6
                     text-white
                     transition-all
@@ -918,9 +1192,7 @@ export default function Auth() {
 
                 </Button>
 
-                {/* ========================= */}
                 {/* APPLE */}
-                {/* ========================= */}
 
                 <Button
                   onClick={signInWithApple}
@@ -931,8 +1203,9 @@ export default function Auth() {
                     w-full
                     justify-start
                     rounded-2xl
+                    border
                     border-white/10
-                    bg-white/[0.03]
+                    bg-white/[0.04]
                     px-6
                     text-white
                     transition-all
@@ -942,31 +1215,26 @@ export default function Auth() {
                   "
                 >
 
-                  <FaApple className="mr-4 text-xl"/>
+                  <FaApple className="mr-4 text-2xl"/>
 
                   Continue with Apple
 
                 </Button>
 
-                {/* ========================= */}
                 {/* PHONE */}
-                {/* ========================= */}
 
                 <Button
-                  onClick={()=>{
-                    setPhone("");
-                    setOtp("");
-                    setOtpSent(false);
-                  }}
                   variant="outline"
+                  onClick={handlePhoneLogin}
                   className="
-                    mb-4
+                    mb-6
                     h-16
                     w-full
                     justify-start
                     rounded-2xl
+                    border
                     border-white/10
-                    bg-white/[0.03]
+                    bg-white/[0.04]
                     px-6
                     text-white
                     transition-all
@@ -982,11 +1250,73 @@ export default function Auth() {
 
                 </Button>
 
-                {/* ========================= */}
-                {/* SIGNUP LINK */}
-                {/* ========================= */}
+                {/* OTP */}
 
-                <div className="mt-10 text-center">
+                {otpSent && (
+
+                  <>
+
+                    <div className="mb-4">
+
+                      <Label
+                        className="
+                          mb-3
+                          block
+                          text-sm
+                          tracking-[3px]
+                          text-neutral-300
+                        "
+                      >
+
+                        ENTER OTP
+
+                      </Label>
+
+                      <Input
+                        value={otp}
+                        onChange={(e)=>
+                          setOtp(e.target.value)
+                        }
+                        placeholder="123456"
+                        className="
+                          h-16
+                          rounded-2xl
+                          border
+                          border-white/10
+                          bg-white/[0.04]
+                          text-center
+                          text-xl
+                          tracking-[10px]
+                          text-white
+                        "
+                      />
+
+                    </div>
+
+                    <Button
+                      onClick={handleVerifyOtp}
+                      className="
+                        mb-6
+                        h-16
+                        w-full
+                        rounded-2xl
+                        bg-white
+                        text-black
+                        hover:bg-neutral-200
+                      "
+                    >
+
+                      Verify OTP
+
+                    </Button>
+
+                  </>
+
+                )}
+
+                {/* SIGNUP LINK */}
+
+                <div className="text-center">
 
                   <span className="text-neutral-500">
 
@@ -995,7 +1325,9 @@ export default function Auth() {
                   </span>
 
                   <button
-                    onClick={() => setMode("signup")}
+                    onClick={() =>
+                      setMode("signup")
+                    }
                     className="
                       ml-2
                       font-semibold
@@ -1014,15 +1346,15 @@ export default function Auth() {
               </>
 
             )}
-                        {/* ========================================= */}
-            {/* SIGNUP FORM */}
-            {/* ========================================= */}
+
+            {/* ================================= */}
+            {/* SIGNUP STARTS HERE */}
+            {/* ================================= */}
 
             {mode === "signup" && (
 
               <>
-
-                <div className="mb-10">
+                              <div className="mb-10">
 
                   <h2
                     className="
@@ -1041,11 +1373,13 @@ export default function Auth() {
                     className="
                       mt-4
                       text-lg
+                      leading-8
                       text-neutral-400
                     "
                   >
 
-                    Join VrushKart and start shopping.
+                    Join India's premium shopping
+                    destination today.
 
                   </p>
 
@@ -1055,7 +1389,15 @@ export default function Auth() {
 
                 <div className="mb-6">
 
-                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
+                  <Label
+                    className="
+                      mb-3
+                      block
+                      text-sm
+                      tracking-[3px]
+                      text-neutral-300
+                    "
+                  >
 
                     FULL NAME
 
@@ -1077,15 +1419,19 @@ export default function Auth() {
 
                     <Input
                       value={fullName}
-                      onChange={(e)=>setFullName(e.target.value)}
+                      onChange={(e)=>
+                        setFullName(e.target.value)
+                      }
                       placeholder="John Doe"
                       className="
                         h-16
                         rounded-2xl
+                        border
                         border-white/10
                         bg-white/[0.04]
                         pl-14
                         text-white
+                        placeholder:text-neutral-500
                       "
                     />
 
@@ -1097,7 +1443,15 @@ export default function Auth() {
 
                 <div className="mb-6">
 
-                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
+                  <Label
+                    className="
+                      mb-3
+                      block
+                      text-sm
+                      tracking-[3px]
+                      text-neutral-300
+                    "
+                  >
 
                     EMAIL ADDRESS
 
@@ -1119,15 +1473,19 @@ export default function Auth() {
 
                     <Input
                       value={email}
-                      onChange={(e)=>setEmail(e.target.value)}
-                      placeholder="john@gmail.com"
+                      onChange={(e)=>
+                        setEmail(e.target.value)
+                      }
+                      placeholder="john@example.com"
                       className="
                         h-16
                         rounded-2xl
+                        border
                         border-white/10
                         bg-white/[0.04]
                         pl-14
                         text-white
+                        placeholder:text-neutral-500
                       "
                     />
 
@@ -1139,7 +1497,15 @@ export default function Auth() {
 
                 <div className="mb-6">
 
-                  <Label className="mb-3 block text-sm tracking-[3px] text-neutral-300">
+                  <Label
+                    className="
+                      mb-3
+                      block
+                      text-sm
+                      tracking-[3px]
+                      text-neutral-300
+                    "
+                  >
 
                     PASSWORD
 
@@ -1160,13 +1526,20 @@ export default function Auth() {
                     />
 
                     <Input
-                      type={showPassword ? "text" : "password"}
+                      type={
+                        showPassword
+                          ? "text"
+                          : "password"
+                      }
                       value={password}
-                      onChange={(e)=>setPassword(e.target.value)}
-                      placeholder="Password"
+                      onChange={(e)=>
+                        setPassword(e.target.value)
+                      }
+                      placeholder="Create Password"
                       className="
                         h-16
                         rounded-2xl
+                        border
                         border-white/10
                         bg-white/[0.04]
                         pl-14
@@ -1177,7 +1550,9 @@ export default function Auth() {
 
                     <button
                       type="button"
-                      onClick={()=>setShowPassword(!showPassword)}
+                      onClick={()=>
+                        setShowPassword(!showPassword)
+                      }
                       className="
                         absolute
                         right-5
@@ -1188,9 +1563,13 @@ export default function Auth() {
                     >
 
                       {showPassword ? (
+
                         <EyeOff className="h-5 w-5"/>
+
                       ) : (
+
                         <Eye className="h-5 w-5"/>
+
                       )}
 
                     </button>
@@ -1238,9 +1617,7 @@ export default function Auth() {
                       }
                       value={confirmPassword}
                       onChange={(e)=>
-                        setConfirmPassword(
-                          e.target.value
-                        )
+                        setConfirmPassword(e.target.value)
                       }
                       placeholder="Confirm Password"
                       className="
@@ -1253,8 +1630,6 @@ export default function Auth() {
                         pr-5
                         text-white
                         placeholder:text-neutral-500
-                        focus:border-white
-                        focus:ring-0
                       "
                     />
 
@@ -1262,76 +1637,70 @@ export default function Auth() {
 
                 </div>
 
-                {/* SELLER */}
+                {/* SELLER OPTION */}
 
-                <div className="mb-8">
+                <label
+                  className="
+                    mb-8
+                    flex
+                    cursor-pointer
+                    items-center
+                    gap-5
+                    rounded-2xl
+                    border
+                    border-white/10
+                    bg-white/[0.04]
+                    p-5
+                    transition-all
+                    duration-300
+                    hover:bg-white/[0.08]
+                  "
+                >
 
-                  <label
+                  <input
+                    type="checkbox"
+                    checked={isSeller}
+                    onChange={(e)=>
+                      setIsSeller(e.target.checked)
+                    }
                     className="
-                      flex
-                      cursor-pointer
-                      items-center
-                      gap-4
-                      rounded-2xl
-                      border
-                      border-white/10
-                      bg-white/[0.03]
-                      p-5
-                      transition-all
-                      duration-300
-                      hover:bg-white/[0.06]
+                      h-5
+                      w-5
+                      accent-white
                     "
-                  >
+                  />
 
-                    <input
-                      type="checkbox"
-                      checked={isSeller}
-                      onChange={(e)=>
-                        setIsSeller(
-                          e.target.checked
-                        )
-                      }
+                  <div>
+
+                    <h3
                       className="
-                        h-5
-                        w-5
-                        accent-white
+                        text-lg
+                        font-semibold
+                        text-white
                       "
-                    />
+                    >
 
-                    <div>
+                      Register as Seller
 
-                      <h3
-                        className="
-                          text-base
-                          font-semibold
-                          text-white
-                        "
-                      >
+                    </h3>
 
-                        Register as Seller
+                    <p
+                      className="
+                        mt-2
+                        text-sm
+                        leading-6
+                        text-neutral-400
+                      "
+                    >
 
-                      </h3>
+                      Open your premium store and
+                      start selling products across India.
 
-                      <p
-                        className="
-                          mt-1
-                          text-sm
-                          leading-6
-                          text-neutral-400
-                        "
-                      >
+                    </p>
 
-                        Open your own premium
-                        VrushKart store and
-                        start selling online.
+                  </div>
 
-                      </p>
-
-                    </div>
-
-                  </label>
-
-                </div>
+                </label>
 
                 {/* CREATE ACCOUNT */}
 
@@ -1375,7 +1744,8 @@ export default function Auth() {
                           ml-3
                           h-5
                           w-5
-                          transition-transform
+                          transition-all
+                          duration-300
                           group-hover:translate-x-1
                         "
                       />
@@ -1400,7 +1770,7 @@ export default function Auth() {
 
                     <span
                       className="
-                        bg-[#050505]
+                        bg-[#040404]
                         px-6
                         text-xs
                         tracking-[6px]
@@ -1408,7 +1778,7 @@ export default function Auth() {
                       "
                     >
 
-                      QUICK SIGN UP
+                      CONTINUE WITH
 
                     </span>
 
@@ -1428,7 +1798,7 @@ export default function Auth() {
                     rounded-2xl
                     border
                     border-white/10
-                    bg-white/[0.03]
+                    bg-white/[0.04]
                     px-6
                     text-white
                     transition-all
@@ -1457,7 +1827,7 @@ export default function Auth() {
                     rounded-2xl
                     border
                     border-white/10
-                    bg-white/[0.03]
+                    bg-white/[0.04]
                     px-6
                     text-white
                     transition-all
@@ -1476,16 +1846,17 @@ export default function Auth() {
                 {/* PHONE */}
 
                 <Button
+                  onClick={handlePhoneLogin}
                   variant="outline"
                   className="
-                    mb-4
+                    mb-6
                     h-16
                     w-full
                     justify-start
                     rounded-2xl
                     border
                     border-white/10
-                    bg-white/[0.03]
+                    bg-white/[0.04]
                     px-6
                     text-white
                     transition-all
@@ -1493,12 +1864,6 @@ export default function Auth() {
                     hover:border-white/20
                     hover:bg-white/[0.08]
                   "
-                  onClick={()=>{
-                    setMode("login");
-                    setPhone("");
-                    setOtp("");
-                    setOtpSent(false);
-                  }}
                 >
 
                   <Phone className="mr-4 h-5 w-5"/>
@@ -1518,9 +1883,7 @@ export default function Auth() {
                   </span>
 
                   <button
-                    onClick={() =>
-                      setMode("login")
-                    }
+                    onClick={() => setMode("login")}
                     className="
                       ml-2
                       font-semibold
@@ -1583,21 +1946,21 @@ export default function Auth() {
 
       <style>{`
 
-      @keyframes heroZoom{
+      @keyframes heroZoom {
 
-        0%{
-          transform:scale(1);
+        0% {
+          transform: scale(1);
         }
 
-        100%{
-          transform:scale(1.08);
+        100% {
+          transform: scale(1.08);
         }
 
       }
 
-      .hero-image{
+      .hero-image {
 
-        animation:heroZoom 18s ease-in-out infinite alternate;
+        animation: heroZoom 18s ease-in-out infinite alternate;
 
       }
 
