@@ -10,7 +10,6 @@ import {
   User,
   Phone,
   Shield,
-  Check,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -31,118 +30,99 @@ export default function Auth() {
     verifyPhoneOtp,
   } = useAuth();
 
-  const [mode, setMode] =
-    useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>("login");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [fullName, setFullName] =
-  useState("");
-
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [fullName, setFullName] = useState("");
 
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [phone, setPhone] =
-    useState("");
+  const [phone, setPhone] = useState("");
 
-  const [otp, setOtp] =
-    useState("");
+  const [otp, setOtp] = useState("");
 
-  const [otpSent, setOtpSent] =
-    useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const response = await fetch(
-      "https://vurshcart.onrender.com/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      const response = await fetch(
+        "https://vurshcart.onrender.com/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        toast.success("Welcome Back");
+        navigate("/");
+      } else {
+        toast.error(data.message);
       }
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-      toast.success("Welcome Back");
-      navigate("/");
-    } else {
-      toast.error(data.message);
+    } catch {
+      toast.error("Login Failed");
+    } finally {
+      setLoading(false);
     }
-  } catch {
-    toast.error("Login Failed");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-// 👇 ADD THIS WHOLE FUNCTION HERE
-const handlePhoneLogin = async () => {
-  toast.success("Phone Login Coming Soon");
-};
+  const handlePhoneLogin = async () => {
+    toast.success("Phone Login Coming Soon");
+  };
 
-return (
-
-
-    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-8">
-
-      <div className="w-full max-w-7xl h-[820px] rounded-[36px] overflow-hidden bg-white shadow-2xl flex">
+  return (
+    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-6 py-10">
+      <div className="w-full max-w-[1450px] min-h-[860px] rounded-[36px] overflow-hidden bg-white shadow-[0_30px_80px_rgba(0,0,0,0.15)] flex">
 
         {/* LEFT PANEL */}
 
-        <div className="relative w-[42%] bg-black text-white overflow-hidden">
+        <div className="relative w-[46%] bg-black text-white overflow-hidden flex items-center justify-center">
 
           <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-900 to-black" />
 
           {/* Lamp */}
 
           <div className="absolute top-0 left-1/2 -translate-x-1/2">
-
             <div className="h-20 w-[2px] bg-neutral-600" />
-
             <div className="h-20 w-32 rounded-b-full bg-neutral-900 border border-neutral-700 shadow-2xl" />
-
           </div>
-
-          {/* Brand */}
+                    {/* Brand */}
 
           <div className="relative z-10 flex h-full flex-col items-center justify-center px-12 text-center">
-                        {/* VK Logo */}
+
+            {/* VK Logo */}
 
             <div className="select-none">
 
               <h1
                 className="text-[92px] font-black tracking-[-8px] leading-none"
                 style={{
-                  fontFamily:
-                    "Georgia, serif",
+                  fontFamily: "Georgia, serif",
                 }}
               >
                 VK
               </h1>
 
               <p className="mt-2 text-[34px] font-light tracking-[12px] uppercase">
-
                 VRUSHKART
-
               </p>
 
             </div>
@@ -154,21 +134,14 @@ return (
             </div>
 
             <h2 className="mt-10 text-4xl font-bold leading-tight">
-
               India's Premium
-
               <br />
-
               AI Marketplace
-
             </h2>
 
             <p className="mt-6 max-w-sm text-lg leading-8 text-neutral-400">
-
-              Shop smarter, sell faster and
-              experience the next generation
+              Shop smarter, sell faster and experience the next generation
               marketplace powered by AI.
-
             </p>
 
             <div className="mt-14 flex items-center gap-3 rounded-full border border-neutral-700 px-6 py-4">
@@ -178,15 +151,11 @@ return (
               <div className="text-left">
 
                 <p className="font-semibold">
-
                   Trusted Platform
-
                 </p>
 
                 <p className="text-sm text-neutral-400">
-
                   Secure • Reliable • Fast
-
                 </p>
 
               </div>
@@ -197,28 +166,24 @@ return (
 
           {/* Curved Divider */}
 
-          <div className="absolute right-[-170px] top-0 h-full w-[340px] rounded-full bg-white" />
+          <div className="absolute right-[-120px] top-0 h-full w-[240px] rounded-full bg-white z-20" />
 
         </div>
 
         {/* RIGHT PANEL */}
 
-        <div className="relative flex-1 bg-white px-20 py-16">
+        <div className="relative flex flex-1 items-center justify-center bg-white px-14 py-14">
 
-          <div className="mx-auto max-w-md">
+          <div className="w-full max-w-[470px]">
 
-            <div className="mb-12 text-center">
+            <div className="mb-10 text-center">
 
               <h2 className="text-5xl font-bold tracking-tight">
-
                 Welcome Back
-
               </h2>
 
               <p className="mt-4 text-lg text-neutral-500">
-
                 Login to your account
-
               </p>
 
             </div>
@@ -228,9 +193,7 @@ return (
             <div className="mb-10 flex rounded-xl bg-neutral-100 p-1">
 
               <button
-                onClick={() =>
-                  setMode("login")
-                }
+                onClick={() => setMode("login")}
                 className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
                   mode === "login"
                     ? "bg-black text-white"
@@ -241,9 +204,7 @@ return (
               </button>
 
               <button
-                onClick={() =>
-                  setMode("signup")
-                }
+                onClick={() => setMode("signup")}
                 className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
                   mode === "signup"
                     ? "bg-black text-white"
@@ -254,20 +215,16 @@ return (
               </button>
 
             </div>
-                        {/* Login */}
+                        {/* LOGIN */}
 
             {mode === "login" && (
-
               <>
-
                 {/* Email */}
 
                 <div className="mb-6">
 
                   <Label className="mb-2 block font-medium">
-
                     Email Address
-
                   </Label>
 
                   <div className="relative">
@@ -277,11 +234,9 @@ return (
                     <Input
                       type="email"
                       value={email}
-                      onChange={(e) =>
-                        setEmail(e.target.value)
-                      }
+                      onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-base"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
                     />
 
                   </div>
@@ -295,14 +250,10 @@ return (
                   <div className="mb-2 flex items-center justify-between">
 
                     <Label className="font-medium">
-
                       Password
-
                     </Label>
 
-                    <button
-                      className="text-sm text-neutral-500 hover:text-black"
-                    >
+                    <button className="text-sm text-neutral-500 hover:text-black transition">
                       Forgot Password?
                     </button>
 
@@ -313,41 +264,23 @@ return (
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
 
                     <Input
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
+                      type={showPassword ? "text" : "password"}
                       value={password}
-                      onChange={(e) =>
-                        setPassword(
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter password"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-base"
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
                     />
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          !showPassword
-                        )
-                      }
+                      onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-5 top-1/2 -translate-y-1/2"
                     >
-
                       {showPassword ? (
-
                         <EyeOff className="h-5 w-5 text-neutral-500" />
-
                       ) : (
-
                         <Eye className="h-5 w-5 text-neutral-500" />
-
                       )}
-
                     </button>
 
                   </div>
@@ -359,25 +292,16 @@ return (
                 <Button
                   onClick={handleLogin}
                   disabled={loading}
-                  className="mt-10 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900"
+                  className="mt-8 h-16 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
                 >
-
                   {loading ? (
-
                     <Loader2 className="h-5 w-5 animate-spin" />
-
                   ) : (
-
                     <>
-
                       Login
-
                       <ArrowRight className="ml-2 h-5 w-5" />
-
                     </>
-
                   )}
-
                 </Button>
 
                 {/* Divider */}
@@ -385,17 +309,13 @@ return (
                 <div className="relative my-10">
 
                   <div className="absolute inset-0 flex items-center">
-
                     <div className="w-full border-t border-neutral-200" />
-
                   </div>
 
                   <div className="relative flex justify-center">
 
-                    <span className="bg-white px-5 text-sm text-neutral-400">
-
+                    <span className="bg-white px-5 text-sm tracking-wide text-neutral-400">
                       OR CONTINUE WITH
-
                     </span>
 
                   </div>
@@ -409,7 +329,7 @@ return (
                   <Button
                     variant="outline"
                     onClick={signInWithGoogle}
-                    className="h-14 rounded-2xl text-base"
+                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
                   >
                     Google
                   </Button>
@@ -417,7 +337,7 @@ return (
                   <Button
                     variant="outline"
                     onClick={signInWithApple}
-                    className="h-14 rounded-2xl text-base"
+                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
                   >
                     Apple
                   </Button>
@@ -432,9 +352,7 @@ return (
                     <Phone className="h-5 w-5 text-neutral-500" />
 
                     <span className="font-medium">
-
                       Continue with Phone
-
                     </span>
 
                   </div>
@@ -445,11 +363,9 @@ return (
 
                     <Input
                       value={phone}
-                      onChange={(e) =>
-                        setPhone(e.target.value)
-                      }
+                      onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 9876543210"
-                      className="h-14 rounded-2xl pl-14"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
                     />
 
                   </div>
@@ -458,11 +374,9 @@ return (
 
                     <Input
                       value={otp}
-                      onChange={(e) =>
-                        setOtp(e.target.value)
-                      }
+                      onChange={(e) => setOtp(e.target.value)}
                       placeholder="Enter OTP"
-                      className="mt-4 h-14 rounded-2xl text-center tracking-[10px]"
+                      className="mt-4 h-16 rounded-2xl border-neutral-300 text-center tracking-[10px]"
                     />
 
                   )}
@@ -470,23 +384,15 @@ return (
                   <Button
                     onClick={handlePhoneLogin}
                     disabled={loading}
-                    className="mt-4 h-14 w-full rounded-2xl bg-black"
+                    className="mt-4 h-16 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
                   >
-
                     {loading ? (
-
                       <Loader2 className="h-5 w-5 animate-spin" />
-
                     ) : otpSent ? (
-
                       "Verify OTP"
-
                     ) : (
-
                       "Send OTP"
-
                     )}
-
                   </Button>
 
                 </div>
@@ -498,20 +404,15 @@ return (
                   Don't have an account?
 
                   <button
-                    onClick={() =>
-                      setMode("signup")
-                    }
+                    onClick={() => setMode("signup")}
                     className="ml-2 font-semibold text-black hover:underline"
                   >
-
                     Create Account
-
                   </button>
 
                 </div>
 
               </>
-
             )}
 
             {/* ================= SIGNUP ================= */}
@@ -523,25 +424,21 @@ return (
                 <div className="mb-10 text-center">
 
                   <h2 className="text-5xl font-bold tracking-tight">
-
                     Create Account
-
                   </h2>
 
                   <p className="mt-4 text-lg text-neutral-500">
-
                     Join the future of shopping
-
                   </p>
 
                 </div>
 
+                {/* Full Name */}
+
                 <div className="mb-6">
 
-                  <Label className="mb-2 block">
-
+                  <Label className="mb-2 block font-medium">
                     Full Name
-
                   </Label>
 
                   <div className="relative">
@@ -549,22 +446,22 @@ return (
                     <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
 
                     <Input
-  value={fullName}
-  onChange={(e) => setFullName(e.target.value)}
-  placeholder="Full Name"
-  className="h-14 rounded-2xl pl-14"
-/>
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
+                    />
 
                   </div>
 
                 </div>
 
+                {/* Email */}
+
                 <div className="mb-6">
 
-                  <Label className="mb-2 block">
-
+                  <Label className="mb-2 block font-medium">
                     Email Address
-
                   </Label>
 
                   <div className="relative">
@@ -572,23 +469,22 @@ return (
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
 
                     <Input
-  type="email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  placeholder="Email Address"
-  className="h-14 rounded-2xl pl-14"
-/>
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
+                    />
 
                   </div>
 
                 </div>
+                                {/* Password */}
 
-                <div>
+                <div className="mb-6">
 
-                  <Label className="mb-2 block">
-
+                  <Label className="mb-2 block font-medium">
                     Password
-
                   </Label>
 
                   <div className="relative">
@@ -596,22 +492,35 @@ return (
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
 
                     <Input
-  type={showPassword ? "text" : "password"}
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  placeholder="Create Password"
-  className="h-14 rounded-2xl pl-14 pr-14"
-/>
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Create a password"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-neutral-500" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-neutral-500" />
+                      )}
+                    </button>
 
                   </div>
 
                 </div>
-                                <div className="mt-6">
 
-                  <Label className="mb-2 block">
+                {/* Confirm Password */}
 
+                <div className="mb-6">
+
+                  <Label className="mb-2 block font-medium">
                     Confirm Password
-
                   </Label>
 
                   <div className="relative">
@@ -619,55 +528,60 @@ return (
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
 
                     <Input
-  type={showPassword ? "text" : "password"}
-  value={confirmPassword}
-  onChange={(e) => setConfirmPassword(e.target.value)}
-  placeholder="Confirm Password"
-  className="h-14 rounded-2xl pl-14 pr-14"
-/>
+                      type={showPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm your password"
+                      className="h-16 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 top-1/2 -translate-y-1/2"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-neutral-500" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-neutral-500" />
+                      )}
+                    </button>
 
                   </div>
 
                 </div>
 
-                {/* Seller */}
+                {/* Seller Account */}
 
-                <label className="mt-6 flex items-center gap-3 rounded-2xl border border-neutral-200 p-4">
+                <label className="mt-2 flex cursor-pointer items-start gap-4 rounded-2xl border border-neutral-200 p-5 transition hover:border-black hover:bg-neutral-50">
 
                   <input
                     type="checkbox"
-                    className="h-5 w-5 rounded"
+                    className="mt-1 h-5 w-5 rounded border-neutral-300"
                   />
 
                   <div>
 
-                    <p className="font-semibold">
-
+                    <p className="font-semibold text-black">
                       Register as Seller
-
                     </p>
 
-                    <p className="text-sm text-neutral-500">
-
-                      Open your own store on
-                      VrushKart
-
+                    <p className="mt-1 text-sm leading-6 text-neutral-500">
+                      Open your own store on VrushKart and start selling products
+                      across India with AI-powered tools.
                     </p>
 
                   </div>
 
                 </label>
 
-                {/* Register */}
+                {/* Create Account */}
 
                 <Button
-                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold"
+                  className="mt-8 h-16 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
                 >
-
                   Create Account
-
                   <ArrowRight className="ml-2 h-5 w-5" />
-
                 </Button>
 
                 {/* Divider */}
@@ -675,60 +589,51 @@ return (
                 <div className="relative my-10">
 
                   <div className="absolute inset-0 flex items-center">
-
                     <div className="w-full border-t border-neutral-200" />
-
                   </div>
 
                   <div className="relative flex justify-center">
 
-                    <span className="bg-white px-5 text-sm text-neutral-400">
-
+                    <span className="bg-white px-5 text-sm tracking-wide text-neutral-400">
                       OR SIGN UP WITH
-
                     </span>
 
                   </div>
 
                 </div>
+                                {/* Social Buttons */}
 
                 <div className="grid grid-cols-2 gap-4">
 
                   <Button
                     variant="outline"
                     onClick={signInWithGoogle}
-                    className="h-14 rounded-2xl"
+                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
                   >
-
                     Google
-
                   </Button>
 
                   <Button
                     variant="outline"
                     onClick={signInWithApple}
-                    className="h-14 rounded-2xl"
+                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
                   >
-
                     Apple
-
                   </Button>
 
                 </div>
+
+                {/* Bottom Text */}
 
                 <div className="mt-10 text-center text-sm text-neutral-600">
 
                   Already have an account?
 
                   <button
-                    onClick={() =>
-                      setMode("login")
-                    }
+                    onClick={() => setMode("login")}
                     className="ml-2 font-semibold text-black hover:underline"
                   >
-
                     Login
-
                   </button>
 
                 </div>
@@ -746,5 +651,4 @@ return (
     </div>
 
   );
-
 }
