@@ -5,19 +5,17 @@ import {
   Lock,
   Eye,
   EyeOff,
-  ArrowRight,
   Loader2,
-  User,
+  ArrowRight,
   Phone,
-  Shield,
-  Check,
+  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 type AuthMode = "login" | "signup";
 
@@ -27,721 +25,771 @@ export default function Auth() {
   const {
     signInWithGoogle,
     signInWithApple,
-    signInWithPhone,
-    verifyPhoneOtp,
   } = useAuth();
 
-  const [mode, setMode] =
-    useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>("login");
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [email, setEmail] =
-    useState("");
+  const [fullName, setFullName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [password, setPassword] =
-    useState("");
-
-  const [fullName, setFullName] =
-  useState("");
+  const [phone, setPhone] = useState("");
 
   const [showPassword, setShowPassword] =
     useState(false);
 
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [phone, setPhone] =
-    useState("");
-
-  const [otp, setOtp] =
-    useState("");
-
-  const [otpSent, setOtpSent] =
-    useState(false);
-
   const handleLogin = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const response = await fetch(
-      "https://vurshcart.onrender.com/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      const response = await fetch(
+        "https://vurshcart.onrender.com/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data.user)
+        );
+
+        toast.success("Welcome Back");
+
+        navigate("/");
+      } else {
+        toast.error(data.message);
       }
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-      toast.success("Welcome Back");
-      navigate("/");
-    } else {
-      toast.error(data.message);
+    } catch {
+      toast.error("Login Failed");
+    } finally {
+      setLoading(false);
     }
-  } catch {
-    toast.error("Login Failed");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-// 👇 ADD THIS WHOLE FUNCTION HERE
-const handlePhoneLogin = async () => {
-  toast.success("Phone Login Coming Soon");
-};
+  return (
+    <div
+      className="relative min-h-screen overflow-hidden bg-black"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4f?auto=format&fit=crop&w=2000&q=80')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        animation: "zoomBackground 25s ease-in-out infinite alternate",
+      }}
+    >
+      {/* DARK OVERLAY */}
 
-return (
+      <div className="absolute inset-0 bg-black/70" />
 
+      {/* GRADIENT */}
 
-    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-8">
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black" />
 
-      <div className="w-full max-w-7xl h-[820px] rounded-[36px] overflow-hidden bg-white shadow-2xl flex">
+      {/* TOP LOGO */}
 
-        {/* LEFT PANEL */}
+      <div className="absolute left-10 top-8 z-20">
 
-        <div className="relative w-[42%] bg-black text-white overflow-hidden">
+        <h1 className="text-5xl font-black tracking-wider text-red-600">
 
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-neutral-900 to-black" />
+          VK
 
-          {/* Lamp */}
+        </h1>
 
-          <div className="absolute top-0 left-1/2 -translate-x-1/2">
+        <p className="text-sm tracking-[10px] text-white">
 
-            <div className="h-20 w-[2px] bg-neutral-600" />
+          VRUSHKART
 
-            <div className="h-20 w-32 rounded-b-full bg-neutral-900 border border-neutral-700 shadow-2xl" />
+        </p>
 
-          </div>
+      </div>
 
-          {/* Brand */}
+      {/* LOGIN CARD */}
 
-          <div className="relative z-10 flex h-full flex-col items-center justify-center px-12 text-center">
-                        {/* VK Logo */}
+      <div className="relative z-20 flex min-h-screen items-center justify-center">
 
-            <div className="select-none">
+        <div
+          className="
+          w-full
+          max-w-md
+          rounded-md
+          border
+          border-white/10
+          bg-black/70
+          p-14
+          shadow-[0_0_60px_rgba(0,0,0,0.7)]
+          backdrop-blur-md
+        "
+        >
 
-              <h1
-                className="text-[92px] font-black tracking-[-8px] leading-none"
-                style={{
-                  fontFamily:
-                    "Georgia, serif",
-                }}
-              >
-                VK
-              </h1>
+          <h2 className="mb-10 text-4xl font-bold text-white">
 
-              <p className="mt-2 text-[34px] font-light tracking-[12px] uppercase">
+            {mode === "login"
+              ? "Sign In"
+              : "Create Account"}
 
-                VRUSHKART
+          </h2>
 
-              </p>
+          {mode === "login" && (
+            <>
 
-            </div>
+              {/* EMAIL */}
 
-            <div className="mt-8 h-px w-52 bg-neutral-700 relative">
+              <div className="mb-5">
 
-              <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+                <Label className="mb-2 block text-white">
 
-            </div>
+                  Email
 
-            <h2 className="mt-10 text-4xl font-bold leading-tight">
+                </Label>
 
-              India's Premium
+                <div className="relative">
 
-              <br />
+                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
 
-              AI Marketplace
+                  <Input
+                    value={email}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
+                    placeholder="Email"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      text-white
+                      placeholder:text-gray-400
+                      focus:border-red-600
+                    "
+                  />
 
-            </h2>
-
-            <p className="mt-6 max-w-sm text-lg leading-8 text-neutral-400">
-
-              Shop smarter, sell faster and
-              experience the next generation
-              marketplace powered by AI.
-
-            </p>
-
-            <div className="mt-14 flex items-center gap-3 rounded-full border border-neutral-700 px-6 py-4">
-
-              <Shield className="h-6 w-6" />
-
-              <div className="text-left">
-
-                <p className="font-semibold">
-
-                  Trusted Platform
-
-                </p>
-
-                <p className="text-sm text-neutral-400">
-
-                  Secure • Reliable • Fast
-
-                </p>
+                </div>
 
               </div>
 
-            </div>
-
-          </div>
-
-          {/* Curved Divider */}
-
-          <div className="absolute right-[-170px] top-0 h-full w-[340px] rounded-full bg-white" />
-
-        </div>
-
-        {/* RIGHT PANEL */}
-
-        <div className="relative flex-1 bg-white px-20 py-16">
-
-          <div className="mx-auto max-w-md">
-
-            <div className="mb-12 text-center">
-
-              <h2 className="text-5xl font-bold tracking-tight">
-
-                Welcome Back
-
-              </h2>
-
-              <p className="mt-4 text-lg text-neutral-500">
-
-                Login to your account
-
-              </p>
-
-            </div>
-
-            {/* Tabs */}
-
-            <div className="mb-10 flex rounded-xl bg-neutral-100 p-1">
-
-              <button
-                onClick={() =>
-                  setMode("login")
-                }
-                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
-                  mode === "login"
-                    ? "bg-black text-white"
-                    : "text-neutral-600"
-                }`}
-              >
-                Login
-              </button>
-
-              <button
-                onClick={() =>
-                  setMode("signup")
-                }
-                className={`flex-1 rounded-lg py-3 text-sm font-semibold transition ${
-                  mode === "signup"
-                    ? "bg-black text-white"
-                    : "text-neutral-600"
-                }`}
-              >
-                Create Account
-              </button>
-
-            </div>
-                        {/* Login */}
-
-            {mode === "login" && (
-
-              <>
-
-                {/* Email */}
-
-                <div className="mb-6">
-
-                  <Label className="mb-2 block font-medium">
-
-                    Email Address
-
-                  </Label>
-
-                  <div className="relative">
-
-                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) =>
-                        setEmail(e.target.value)
-                      }
-                      placeholder="Enter your email"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-base"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* Password */}
-
-                <div>
-
-                  <div className="mb-2 flex items-center justify-between">
-
-                    <Label className="font-medium">
-
-                      Password
-
-                    </Label>
-
-                    <button
-                      className="text-sm text-neutral-500 hover:text-black"
-                    >
-                      Forgot Password?
-                    </button>
-
-                  </div>
-
-                  <div className="relative">
-
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
-                      value={password}
-                      onChange={(e) =>
-                        setPassword(
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter password"
-                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-base"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          !showPassword
-                        )
-                      }
-                      className="absolute right-5 top-1/2 -translate-y-1/2"
-                    >
-
-                      {showPassword ? (
-
-                        <EyeOff className="h-5 w-5 text-neutral-500" />
-
-                      ) : (
-
-                        <Eye className="h-5 w-5 text-neutral-500" />
-
-                      )}
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-                {/* Login Button */}
-
-                <Button
-                  onClick={handleLogin}
-                  disabled={loading}
-                  className="mt-10 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900"
-                >
-
-                  {loading ? (
-
-                    <Loader2 className="h-5 w-5 animate-spin" />
-
-                  ) : (
-
-                    <>
-
-                      Login
-
-                      <ArrowRight className="ml-2 h-5 w-5" />
-
-                    </>
-
-                  )}
-
-                </Button>
-
-                {/* Divider */}
-
-                <div className="relative my-10">
-
-                  <div className="absolute inset-0 flex items-center">
-
-                    <div className="w-full border-t border-neutral-200" />
-
-                  </div>
-
-                  <div className="relative flex justify-center">
-
-                    <span className="bg-white px-5 text-sm text-neutral-400">
-
-                      OR CONTINUE WITH
-
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {/* Social Buttons */}
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithGoogle}
-                    className="h-14 rounded-2xl text-base"
-                  >
-                    Google
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithApple}
-                    className="h-14 rounded-2xl text-base"
-                  >
-                    Apple
-                  </Button>
-
-                </div>
-                                {/* Phone Login */}
-
-                <div className="mt-8">
-
-                  <div className="mb-3 flex items-center gap-2">
-
-                    <Phone className="h-5 w-5 text-neutral-500" />
-
-                    <span className="font-medium">
-
-                      Continue with Phone
-
-                    </span>
-
-                  </div>
-
-                  <div className="relative">
-
-                    <Phone className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-                      value={phone}
-                      onChange={(e) =>
-                        setPhone(e.target.value)
-                      }
-                      placeholder="+91 9876543210"
-                      className="h-14 rounded-2xl pl-14"
-                    />
-
-                  </div>
-
-                  {otpSent && (
-
-                    <Input
-                      value={otp}
-                      onChange={(e) =>
-                        setOtp(e.target.value)
-                      }
-                      placeholder="Enter OTP"
-                      className="mt-4 h-14 rounded-2xl text-center tracking-[10px]"
-                    />
-
-                  )}
-
-                  <Button
-                    onClick={handlePhoneLogin}
-                    disabled={loading}
-                    className="mt-4 h-14 w-full rounded-2xl bg-black"
-                  >
-
-                    {loading ? (
-
-                      <Loader2 className="h-5 w-5 animate-spin" />
-
-                    ) : otpSent ? (
-
-                      "Verify OTP"
-
-                    ) : (
-
-                      "Send OTP"
-
-                    )}
-
-                  </Button>
-
-                </div>
-
-                {/* Bottom */}
-
-                <div className="mt-10 text-center text-sm text-neutral-600">
-
-                  Don't have an account?
+              {/* PASSWORD */}
+
+              <div className="mb-8">
+
+                <Label className="mb-2 block text-white">
+
+                  Password
+
+                </Label>
+
+                <div className="relative">
+
+                  <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+
+                  <Input
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Password"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      pr-12
+                      text-white
+                      placeholder:text-gray-400
+                      focus:border-red-600
+                    "
+                  />
 
                   <button
+                    type="button"
                     onClick={() =>
-                      setMode("signup")
+                      setShowPassword(
+                        !showPassword
+                      )
                     }
-                    className="ml-2 font-semibold text-black hover:underline"
+                    className="absolute right-4 top-1/2 -translate-y-1/2"
                   >
-
-                    Create Account
-
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-300" />
+                    )}
                   </button>
 
                 </div>
 
-              </>
+              </div>
+                            {/* Remember Me */}
 
-            )}
+              <div className="mb-6 flex items-center justify-between">
 
-            {/* ================= SIGNUP ================= */}
+                <label className="flex items-center gap-2 text-sm text-gray-300">
 
-            {mode === "signup" && (
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-500 bg-[#333]"
+                  />
 
-              <>
+                  Remember me
 
-                <div className="mb-10 text-center">
+                </label>
 
-                  <h2 className="text-5xl font-bold tracking-tight">
+                <button
+                  className="text-sm text-gray-300 transition hover:text-white"
+                >
+                  Forgot Password?
+                </button>
 
-                    Create Account
+              </div>
 
-                  </h2>
+              {/* LOGIN BUTTON */}
 
-                  <p className="mt-4 text-lg text-neutral-500">
+              <Button
+                onClick={handleLogin}
+                disabled={loading}
+                className="
+                  h-14
+                  w-full
+                  rounded
+                  bg-[#E50914]
+                  text-base
+                  font-semibold
+                  transition-all
+                  duration-300
+                  hover:bg-[#F6121D]
+                  hover:scale-[1.02]
+                  active:scale-100
+                "
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </>
+                )}
+              </Button>
 
-                    Join the future of shopping
+              {/* OR */}
+
+              <div className="my-8 flex items-center">
+
+                <div className="h-px flex-1 bg-gray-700" />
+
+                <span className="px-4 text-sm text-gray-400">
+
+                  OR
+
+                </span>
+
+                <div className="h-px flex-1 bg-gray-700" />
+
+              </div>
+
+              {/* GOOGLE */}
+
+              <Button
+                variant="outline"
+                onClick={signInWithGoogle}
+                className="
+                  mb-4
+                  h-14
+                  w-full
+                  border-gray-600
+                  bg-[#222]
+                  text-white
+                  hover:bg-[#333]
+                "
+              >
+                Continue with Google
+              </Button>
+
+              {/* APPLE */}
+
+              <Button
+                variant="outline"
+                onClick={signInWithApple}
+                className="
+                  mb-4
+                  h-14
+                  w-full
+                  border-gray-600
+                  bg-[#222]
+                  text-white
+                  hover:bg-[#333]
+                "
+              >
+                Continue with Apple
+              </Button>
+
+              {/* PHONE */}
+
+              <div className="mb-6">
+
+                <Label className="mb-2 block text-white">
+
+                  Phone Number
+
+                </Label>
+
+                <div className="relative">
+
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                  <Input
+                    value={phone}
+                    onChange={(e) =>
+                      setPhone(e.target.value)
+                    }
+                    placeholder="+91 9876543210"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      text-white
+                      placeholder:text-gray-400
+                    "
+                  />
+
+                </div>
+
+              </div>
+
+              <Button
+                variant="outline"
+                className="
+                  h-14
+                  w-full
+                  border-gray-600
+                  bg-[#222]
+                  text-white
+                  hover:bg-[#333]
+                "
+              >
+                Continue with Phone
+              </Button>
+
+              {/* SIGN UP */}
+
+              <div className="mt-10 text-center">
+
+                <span className="text-gray-400">
+
+                  New to VrushKart?
+
+                </span>
+
+                <button
+                  onClick={() => setMode("signup")}
+                  className="
+                    ml-2
+                    font-semibold
+                    text-white
+                    transition
+                    hover:text-[#E50914]
+                  "
+                >
+                  Sign up now
+                </button>
+
+              </div>
+
+              {/* CAPTCHA */}
+
+              <p className="mt-8 text-center text-xs leading-6 text-gray-500">
+
+                This page is protected by Google reCAPTCHA to ensure
+                you're not a bot.
+
+              </p>
+
+            </>
+          )}
+
+          {/* SIGNUP */}
+
+          {mode === "signup" && (
+
+            <>
+
+              <h2 className="mb-8 text-4xl font-bold text-white">
+
+                Create Account
+
+              </h2>
+
+              {/* NAME */}
+
+              <div className="mb-5">
+
+                <Label className="mb-2 block text-white">
+
+                  Full Name
+
+                </Label>
+
+                <div className="relative">
+
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                  <Input
+                    value={fullName}
+                    onChange={(e) =>
+                      setFullName(e.target.value)
+                    }
+                    placeholder="Full Name"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      text-white
+                    "
+                  />
+
+                </div>
+
+              </div>
+
+              {/* EMAIL */}
+
+              <div className="mb-5">
+
+                <Label className="mb-2 block text-white">
+
+                  Email
+
+                </Label>
+
+                <div className="relative">
+
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                  <Input
+                    value={email}
+                    onChange={(e) =>
+                      setEmail(e.target.value)
+                    }
+                    placeholder="Email"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      text-white
+                    "
+                  />
+
+                </div>
+
+              </div>
+                            {/* PASSWORD */}
+
+              <div className="mb-5">
+
+                <Label className="mb-2 block text-white">
+
+                  Password
+
+                </Label>
+
+                <div className="relative">
+
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                  <Input
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Create Password"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      pr-12
+                      text-white
+                      placeholder:text-gray-400
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(
+                        !showPassword
+                      )
+                    }
+                    className="absolute right-4 top-1/2 -translate-y-1/2"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-300" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-300" />
+                    )}
+                  </button>
+
+                </div>
+
+              </div>
+
+              {/* CONFIRM PASSWORD */}
+
+              <div className="mb-6">
+
+                <Label className="mb-2 block text-white">
+
+                  Confirm Password
+
+                </Label>
+
+                <div className="relative">
+
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+                  <Input
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
+                    value={confirmPassword}
+                    onChange={(e) =>
+                      setConfirmPassword(
+                        e.target.value
+                      )
+                    }
+                    placeholder="Confirm Password"
+                    className="
+                      h-14
+                      border-gray-600
+                      bg-[#333]
+                      pl-12
+                      text-white
+                      placeholder:text-gray-400
+                    "
+                  />
+
+                </div>
+
+              </div>
+
+              {/* SELLER OPTION */}
+
+              <label
+                className="
+                  mb-8
+                  flex
+                  cursor-pointer
+                  items-center
+                  gap-3
+                  rounded-md
+                  border
+                  border-gray-700
+                  bg-[#222]
+                  p-4
+                  transition
+                  hover:border-red-600
+                "
+              >
+
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 accent-red-600"
+                />
+
+                <div>
+
+                  <p className="font-semibold text-white">
+
+                    Register as Seller
+
+                  </p>
+
+                  <p className="text-sm text-gray-400">
+
+                    Open your premium store on
+                    VrushKart Marketplace
 
                   </p>
 
                 </div>
 
-                <div className="mb-6">
+              </label>
 
-                  <Label className="mb-2 block">
+              {/* CREATE ACCOUNT */}
 
-                    Full Name
+              <Button
+                className="
+                  h-14
+                  w-full
+                  rounded
+                  bg-[#E50914]
+                  text-base
+                  font-semibold
+                  hover:bg-[#F6121D]
+                  transition-all
+                  duration-300
+                  hover:scale-[1.02]
+                "
+              >
 
-                  </Label>
+                Create Account
 
-                  <div className="relative">
+                <ArrowRight className="ml-2 h-5 w-5" />
 
-                    <User className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              </Button>
 
-                    <Input
-  value={fullName}
-  onChange={(e) => setFullName(e.target.value)}
-  placeholder="Full Name"
-  className="h-14 rounded-2xl pl-14"
-/>
+              {/* DIVIDER */}
 
-                  </div>
+              <div className="my-8 flex items-center">
 
-                </div>
+                <div className="h-px flex-1 bg-gray-700" />
 
-                <div className="mb-6">
+                <span className="px-4 text-sm text-gray-400">
 
-                  <Label className="mb-2 block">
+                  OR
 
-                    Email Address
+                </span>
 
-                  </Label>
+                <div className="h-px flex-1 bg-gray-700" />
 
-                  <div className="relative">
+              </div>
 
-                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              {/* GOOGLE */}
 
-                    <Input
-  type="email"
-  value={email}
-  onChange={(e) => setEmail(e.target.value)}
-  placeholder="Email Address"
-  className="h-14 rounded-2xl pl-14"
-/>
+              <Button
+                variant="outline"
+                onClick={signInWithGoogle}
+                className="
+                  mb-4
+                  h-14
+                  w-full
+                  border-gray-600
+                  bg-[#222]
+                  text-white
+                  hover:bg-[#333]
+                "
+              >
 
-                  </div>
+                Continue with Google
 
-                </div>
+              </Button>
 
-                <div>
+              {/* APPLE */}
 
-                  <Label className="mb-2 block">
+              <Button
+                variant="outline"
+                onClick={signInWithApple}
+                className="
+                  h-14
+                  w-full
+                  border-gray-600
+                  bg-[#222]
+                  text-white
+                  hover:bg-[#333]
+                "
+              >
 
-                    Password
+                Continue with Apple
 
-                  </Label>
+              </Button>
 
-                  <div className="relative">
+              {/* LOGIN LINK */}
 
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              <div className="mt-10 text-center">
 
-                    <Input
-  type={showPassword ? "text" : "password"}
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  placeholder="Create Password"
-  className="h-14 rounded-2xl pl-14 pr-14"
-/>
-
-                  </div>
-
-                </div>
-                                <div className="mt-6">
-
-                  <Label className="mb-2 block">
-
-                    Confirm Password
-
-                  </Label>
-
-                  <div className="relative">
-
-                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
-
-                    <Input
-  type={showPassword ? "text" : "password"}
-  value={confirmPassword}
-  onChange={(e) => setConfirmPassword(e.target.value)}
-  placeholder="Confirm Password"
-  className="h-14 rounded-2xl pl-14 pr-14"
-/>
-
-                  </div>
-
-                </div>
-
-                {/* Seller */}
-
-                <label className="mt-6 flex items-center gap-3 rounded-2xl border border-neutral-200 p-4">
-
-                  <input
-                    type="checkbox"
-                    className="h-5 w-5 rounded"
-                  />
-
-                  <div>
-
-                    <p className="font-semibold">
-
-                      Register as Seller
-
-                    </p>
-
-                    <p className="text-sm text-neutral-500">
-
-                      Open your own store on
-                      VrushKart
-
-                    </p>
-
-                  </div>
-
-                </label>
-
-                {/* Register */}
-
-                <Button
-                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold"
-                >
-
-                  Create Account
-
-                  <ArrowRight className="ml-2 h-5 w-5" />
-
-                </Button>
-
-                {/* Divider */}
-
-                <div className="relative my-10">
-
-                  <div className="absolute inset-0 flex items-center">
-
-                    <div className="w-full border-t border-neutral-200" />
-
-                  </div>
-
-                  <div className="relative flex justify-center">
-
-                    <span className="bg-white px-5 text-sm text-neutral-400">
-
-                      OR SIGN UP WITH
-
-                    </span>
-
-                  </div>
-
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithGoogle}
-                    className="h-14 rounded-2xl"
-                  >
-
-                    Google
-
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={signInWithApple}
-                    className="h-14 rounded-2xl"
-                  >
-
-                    Apple
-
-                  </Button>
-
-                </div>
-
-                <div className="mt-10 text-center text-sm text-neutral-600">
+                <span className="text-gray-400">
 
                   Already have an account?
 
-                  <button
-                    onClick={() =>
-                      setMode("login")
-                    }
-                    className="ml-2 font-semibold text-black hover:underline"
-                  >
+                </span>
 
-                    Login
+                <button
+                  onClick={() =>
+                    setMode("login")
+                  }
+                  className="
+                    ml-2
+                    font-semibold
+                    text-white
+                    hover:text-[#E50914]
+                  "
+                >
 
-                  </button>
+                  Sign In
 
-                </div>
+                </button>
 
-              </>
+              </div>
 
-            )}
+            </>
 
-          </div>
+          )}
 
         </div>
 
       </div>
+
+      {/* NETFLIX STYLE DARK SHADOW */}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+      {/* TOP SHADOW */}
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black via-black/60 to-transparent" />
+
+      {/* BACKGROUND ANIMATION */}
+
+      <style>{`
+
+      @keyframes zoomBackground{
+
+          0%{
+
+             transform:scale(1);
+
+          }
+
+          100%{
+
+             transform:scale(1.08);
+
+          }
+
+      }
+
+      `}</style>
 
     </div>
 
