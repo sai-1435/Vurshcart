@@ -90,7 +90,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center px-6 py-10">
-      <div className="w-full max-w-[1450px] min-h-[860px] rounded-[36px] overflow-hidden bg-white shadow-[0_30px_80px_rgba(0,0,0,0.15)] flex">
+      <div className="w-full max-w-[1450px] h-[92vh] rounded-[36px] overflow-hidden bg-white shadow-[0_30px_80px_rgba(0,0,0,0.15)] flex">
 
         {/* LEFT PANEL */}
 
@@ -113,7 +113,7 @@ export default function Auth() {
             <div className="select-none">
 
               <h1
-                className="text-[92px] font-black tracking-[-8px] leading-none"
+                className="text-[80px] font-black tracking-[-8px] leading-none"
                 style={{
                   fontFamily: "Georgia, serif",
                 }}
@@ -121,7 +121,7 @@ export default function Auth() {
                 VK
               </h1>
 
-              <p className="mt-2 text-[34px] font-light tracking-[12px] uppercase">
+              <p className="mt-2 text-[28px] font-light tracking-[12px] uppercase">
                 VRUSHKART
               </p>
 
@@ -133,7 +133,7 @@ export default function Auth() {
 
             </div>
 
-            <h2 className="mt-10 text-4xl font-bold leading-tight">
+            <h2 className="mt-6 text-4xl font-bold leading-tight">
               India's Premium
               <br />
               AI Marketplace
@@ -172,11 +172,11 @@ export default function Auth() {
 
         {/* RIGHT PANEL */}
 
-        <div className="relative flex flex-1 items-center justify-center bg-white px-14 py-14">
+        <div className="relative flex flex-1 items-center justify-center bg-white px-14 py-10 overflow-hidden">
 
           <div className="w-full max-w-[470px]">
 
-            <div className="mb-10 text-center">
+            <div className="mb-6text-center">
 
               <h2 className="text-5xl font-bold tracking-tight">
                 Welcome Back
@@ -190,7 +190,7 @@ export default function Auth() {
 
             {/* Tabs */}
 
-            <div className="mb-10 flex rounded-xl bg-neutral-100 p-1">
+            <div className="mb-6 flex rounded-xl bg-neutral-100 p-1">
 
               <button
                 onClick={() => setMode("login")}
@@ -236,7 +236,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
                     />
 
                   </div>
@@ -268,7 +268,7 @@ export default function Auth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
                     />
 
                     <button
@@ -292,7 +292,7 @@ export default function Auth() {
                 <Button
                   onClick={handleLogin}
                   disabled={loading}
-                  className="mt-8 h-16 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
+                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
                 >
                   {loading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -306,7 +306,7 @@ export default function Auth() {
 
                 {/* Divider */}
 
-                <div className="relative my-10">
+                <div className="relative my-6">
 
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-neutral-200" />
@@ -329,7 +329,7 @@ export default function Auth() {
                   <Button
                     variant="outline"
                     onClick={signInWithGoogle}
-                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
+                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
                   >
                     Google
                   </Button>
@@ -337,7 +337,7 @@ export default function Auth() {
                   <Button
                     variant="outline"
                     onClick={signInWithApple}
-                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
+                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100"
                   >
                     Apple
                   </Button>
@@ -365,7 +365,7 @@ export default function Auth() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 9876543210"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
                     />
 
                   </div>
@@ -376,7 +376,7 @@ export default function Auth() {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
                       placeholder="Enter OTP"
-                      className="mt-4 h-16 rounded-2xl border-neutral-300 text-center tracking-[10px]"
+                      className="mt-4 h-14 rounded-2xl border-neutral-300 text-center tracking-[10px]"
                     />
 
                   )}
@@ -384,7 +384,7 @@ export default function Auth() {
                   <Button
                     onClick={handlePhoneLogin}
                     disabled={loading}
-                    className="mt-4 h-16 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
+                    className="mt-4 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
                   >
                     {loading ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -399,7 +399,7 @@ export default function Auth() {
 
                 {/* Bottom */}
 
-                <div className="mt-10 text-center text-sm text-neutral-600">
+                <div className="mt-6 text-center text-sm text-neutral-600">
 
                   Don't have an account?
 
@@ -421,7 +421,7 @@ export default function Auth() {
 
               <>
 
-                <div className="mb-10 text-center">
+                <div className="mb-6 text-center">
 
                   <h2 className="text-5xl font-bold tracking-tight">
                     Create Account
@@ -449,7 +449,7 @@ export default function Auth() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Enter your full name"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
                     />
 
                   </div>
@@ -473,7 +473,7 @@ export default function Auth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 text-[15px] font-medium"
                     />
 
                   </div>
@@ -496,7 +496,7 @@ export default function Auth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Create a password"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
                     />
 
                     <button
@@ -532,7 +532,7 @@ export default function Auth() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your password"
-                      className="h-16 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
+                      className="h-14 rounded-2xl border-neutral-300 pl-14 pr-14 text-[15px] font-medium"
                     />
 
                     <button
@@ -578,7 +578,7 @@ export default function Auth() {
                 {/* Create Account */}
 
                 <Button
-                  className="mt-8 h-16 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
+                  className="mt-8 h-14 w-full rounded-2xl bg-black text-base font-semibold hover:bg-neutral-900 transition-all"
                 >
                   Create Account
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -586,7 +586,7 @@ export default function Auth() {
 
                 {/* Divider */}
 
-                <div className="relative my-10">
+                <div className="relative my-6">
 
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-neutral-200" />
@@ -608,7 +608,7 @@ export default function Auth() {
                   <Button
                     variant="outline"
                     onClick={signInWithGoogle}
-                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
+                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
                   >
                     Google
                   </Button>
@@ -616,7 +616,7 @@ export default function Auth() {
                   <Button
                     variant="outline"
                     onClick={signInWithApple}
-                    className="h-16 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
+                    className="h-14 rounded-2xl border border-neutral-300 hover:bg-neutral-100 transition-all"
                   >
                     Apple
                   </Button>
@@ -625,7 +625,7 @@ export default function Auth() {
 
                 {/* Bottom Text */}
 
-                <div className="mt-10 text-center text-sm text-neutral-600">
+                <div className="mt-6 text-center text-sm text-neutral-600">
 
                   Already have an account?
 
