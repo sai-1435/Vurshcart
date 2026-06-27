@@ -276,7 +276,7 @@ if (registerStep === 2) {
     }
 
     setLoading(false);
-  };
+  }
 
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-gradient-soft">
@@ -284,9 +284,9 @@ if (registerStep === 2) {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2),transparent_60%)]" />
 
         <div className="relative">
-          <Link to="/" className="text-white">
-            <Logo />
-          </Link>
+          <div className="text-white">
+  <Logo />
+</div>
         </div>
               <div className="relative">
         <h2 className="text-3xl font-bold leading-tight">
