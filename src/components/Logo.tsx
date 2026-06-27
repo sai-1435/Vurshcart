@@ -10,7 +10,6 @@ fontWeight: 700,
 >
 VK </div>
 
-```
   <div
     className="text-[9px] uppercase text-gray-500 mt-1"
     style={{
