@@ -13,9 +13,13 @@ CORS(app)
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USE_SSL"] = False
 
 app.config["MAIL_USERNAME"] = "vrukartofficial@gmail.com"
 app.config["MAIL_PASSWORD"] = "werfotutagjmcgqp"
+
+app.config["MAIL_DEFAULT_SENDER"] = app.config["MAIL_USERNAME"]
+app.config["MAIL_SUPPRESS_SEND"] = False
 
 mail = Mail(app)
 
@@ -148,60 +152,85 @@ def login():
     }), 401
 @app.route("/send-otp", methods=["POST"])
 def send_otp():
+    try:
+        data = request.json
 
-    data = request.json
-    email = data["email"]
+        if not data or "email" not in data:
+            return jsonify({
+                "success": False,
+                "message": "Email is required"
+            }), 400
 
-    otp = str(
-        random.randint(
-            100000,
-            999999
+        email = data["email"]
+
+        otp = str(random.randint(100000, 999999))
+
+        # Save OTP into database
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO email_otps (
+                email,
+                otp
+            )
+            VALUES (%s, %s)
+            """,
+            (email, otp)
         )
-    )
 
-    db = get_db()
-    cursor = db.cursor()
+        db.commit()
 
-    cursor.execute(
+        cursor.close()
+        db.close()
+
+        # Create Email
+        msg = Message(
+            subject="Vrukart Email Verification",
+            sender=app.config["MAIL_USERNAME"],
+            recipients=[email]
+        )
+
+        msg.html = f"""
+        <html>
+        <body>
+            <h2>Welcome to Vrukart</h2>
+
+            <p>Your verification OTP is:</p>
+
+            <h1 style="color:#2563eb;">{otp}</h1>
+
+            <p>This OTP is valid for 10 minutes.</p>
+
+            <br>
+
+            <p>Thank you,<br>Vrukart Team</p>
+        </body>
+        </html>
         """
-        INSERT INTO email_otps(
-            email,
-            otp
-        )
-        VALUES(%s,%s)
-        """,
-        (email, otp)
-    )
 
-    db.commit()
+        print("Connecting to Gmail SMTP...")
 
-    cursor.close()
-    db.close()
+        mail.send(msg)
 
-    msg = Message(
-        "Vrukart Email Verification",
-        sender=app.config["MAIL_USERNAME"],
-        recipients=[email]
-    )
+        print("Email Sent Successfully")
 
-    msg.html = f"""
-    <h2>Vrukart Verification</h2>
-    <p>Your OTP is:</p>
+        return jsonify({
+            "success": True,
+            "message": "OTP Sent Successfully"
+        })
 
-    <h1>{otp}</h1>
+    except Exception as e:
+        import traceback
 
-    <p>
-      This OTP is valid
-      for 10 minutes.
-    </p>
-    """
+        traceback.print_exc()
 
-    mail.send(msg)
-
-    return jsonify({
-        "success": True,
-        "message": "OTP Sent Successfully"
-    })
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+    
 @app.route("/verify-otp", methods=["POST"])
 def verify_otp():
 
