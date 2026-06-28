@@ -6,11 +6,12 @@ import bcrypt
 import random
 import razorpay
 from datetime import datetime, timedelta
+import smtplib
+from email.mime.text import MIMEText
+import os
 
 app = Flask(__name__)
 CORS(app)
-
-import os
 
 app.config["MAIL_SERVER"] = "smtp.titan.email"
 app.config["MAIL_PORT"] = 465
@@ -162,10 +163,9 @@ def send_otp():
             }), 400
 
         email = data["email"]
-
         otp = str(random.randint(100000, 999999))
 
-        # Save OTP into database
+        # Save OTP
         db = get_db()
         cursor = db.cursor()
 
@@ -185,38 +185,48 @@ def send_otp():
         cursor.close()
         db.close()
 
-        # Create Email
-        msg = Message(
-            subject="Vrukart Email Verification",
-            sender=app.config["MAIL_USERNAME"],
-            recipients=[email]
-        )
-
-        msg.html = f"""
-        <html>
-        <body>
-            <h2>Welcome to Vrukart</h2>
-
-            <p>Your verification OTP is:</p>
-
-            <h1 style="color:#2563eb;">{otp}</h1>
-
-            <p>This OTP is valid for 10 minutes.</p>
-
-            <br>
-
-            <p>Thank you,<br>Vrukart Team</p>
-        </body>
-        </html>
-        """
-
         print("Connecting to Titan SMTP...")
         print("MAIL SERVER:", app.config["MAIL_SERVER"])
         print("MAIL PORT:", app.config["MAIL_PORT"])
         print("MAIL USERNAME:", app.config["MAIL_USERNAME"])
         print("MAIL PASSWORD EXISTS:", bool(app.config["MAIL_PASSWORD"]))
 
-        mail.send(msg)
+        # Create plain text email
+        message = MIMEText(f"""
+Welcome to Vrukart
+
+Your OTP is:
+
+{otp}
+
+This OTP is valid for 10 minutes.
+        """)
+
+        message["Subject"] = "Vrukart Email Verification"
+        message["From"] = app.config["MAIL_USERNAME"]
+        message["To"] = email
+
+        # Connect to Titan SMTP
+        server = smtplib.SMTP_SSL(
+            app.config["MAIL_SERVER"],
+            app.config["MAIL_PORT"],
+            timeout=15
+        )
+
+        server.login(
+            app.config["MAIL_USERNAME"],
+            app.config["MAIL_PASSWORD"]
+        )
+
+        server.sendmail(
+            app.config["MAIL_USERNAME"],
+            [email],
+            message.as_string()
+        )
+
+        server.quit()
+
+        print("SMTP LOGIN SUCCESS")
         print("Email Sent Successfully")
 
         return jsonify({
@@ -226,7 +236,6 @@ def send_otp():
 
     except Exception as e:
         import traceback
-
         traceback.print_exc()
 
         return jsonify({
