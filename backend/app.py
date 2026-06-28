@@ -211,9 +211,12 @@ def send_otp():
         """
 
         print("Connecting to Titan SMTP...")
+        print("MAIL SERVER:", app.config["MAIL_SERVER"])
+        print("MAIL PORT:", app.config["MAIL_PORT"])
+        print("MAIL USERNAME:", app.config["MAIL_USERNAME"])
+        print("MAIL PASSWORD EXISTS:", bool(app.config["MAIL_PASSWORD"]))
 
         mail.send(msg)
-
         print("Email Sent Successfully")
 
         return jsonify({
