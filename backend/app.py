@@ -210,7 +210,7 @@ def send_otp():
         </html>
         """
 
-        print("Connecting to Gmail SMTP...")
+        print("Connecting to Titan SMTP...")
 
         mail.send(msg)
 
